@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.target=CondVar
+comment1.params=
+comment1.target=CondVar()
+comment2.params=
+comment2.target=void\ cvWait()
+comment3.params=millis
+comment3.target=void\ cvTimedWait(int)
+comment4.params=
+comment4.target=void\ cvSignal()
+comment5.params=
+comment5.target=void\ cvBroadcast()
+numComments=6

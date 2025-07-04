@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Prototype</title>
+</head>
+<body>
+    <script>
+        // Định nghĩa constructor function cho Car
+    function Car(brand, year) {
+        this.brand = brand;
+        this.year = year;
+    }
+    Car.prototype.getInfo = function() {
+    return `Tên: ${this.brand}, Năm sản xuất: ${this.year}`;
+};
+    // Tạo một đối tượng Car
+    let myCar = new Car("Toyota", 2020);
+    let myCar2 = new Car("Honda",2003);
+
+    console.log(myCar.getInfo()); 
+    console.log(myCar2.getInfo());
+
+
+    </script>
+</body>
+</html>

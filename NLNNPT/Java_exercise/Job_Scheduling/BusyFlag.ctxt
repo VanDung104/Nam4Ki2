@@ -1,0 +1,11 @@
+#BlueJ class context
+comment0.target=BusyFlag
+comment1.params=
+comment1.target=void\ getBusyFlag()
+comment2.params=
+comment2.target=boolean\ tryGetBusyFlag()
+comment3.params=
+comment3.target=void\ freeBusyFlag()
+comment4.params=
+comment4.target=java.lang.Thread\ getBusyFlagOwner()
+numComments=5

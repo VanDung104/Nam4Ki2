@@ -1,0 +1,7 @@
+#BlueJ class context
+comment0.target=CoffeeShop
+comment1.params=coffee
+comment1.target=void\ makeCoffee(java.lang.String)
+comment2.params=
+comment2.target=void\ takeCoffee()
+numComments=3

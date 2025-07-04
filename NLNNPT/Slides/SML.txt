@@ -1,0 +1,3973 @@
+
+fun  f (x : int ref) = (x := !x+1;  !x);
+
+val y = ref 0;
+
+f(y) + !y;
+
+fun f(z:int) = let val x = ref z in x:= !x + 1;!x end;
+
+val y = ref 0;
+
+f(!y) + !y;
+
+***********
+
+val x=1;
+fun g(z) = x+z; 
+fun f(y) = 
+ let val x = y+1 
+ in g(y*x)
+ end; 
+ f(3);
+
+
+                 
+fun f(x,y) = if x > y 
+      then x 
+      else f(2*x, y);
+f(1,3) + 7;
+
+
+
+fun fact(0, m) = m | fact(n, m) = fact( n-1, n*m);
+
+fact(10,1);
+
+
+
+Bo sung 
+
+val x = 4;
+fun f(y) = x*y;
+ fun g(h) = 
+   let val x = 7
+      in h(3) + x
+ end; 
+g(f); 
+
+
+***************
+
+fun mk_counter(init:int) = 
+   let val count = ref init
+       fun counter(inc:int) =
+           (count := !count + inc; !count)
+   in
+       counter
+   end;   
+
+val c = mk_counter(1);
+
+c(2) + c(2); 
+
+
+fun swap(x,y) = 
+  let val z = !x in x := !y; y := z end;
+
+val u = ref [1,2,3];
+
+val v = ref [4,5];
+
+swap(u,v);
+
+!u;
+!v;
+
+****************
+
+fun insert(a, nil) = [a] | insert(a, b::t) = if a < b then a::b::t else b:: insert(a, t); 
+
+fun sort_ins(nil)=nil | sort_ins(a::t) = insert(a,sort_ins(t)); 
+
+[4, 5, 1, 8, 3, 6, 2]
+
+ 
+*****************************
+
+
+
+
+************************
+(* Lists *)
+
+fun length nil = 0
+  | length (_::t) = 1 + length t
+
+fun append (nil, l) = l
+  | append (h::t, l) = h :: append (t, l)
+
+//fun rev nil = nil
+//  | rev (h::t) = rev t @ [h]
+
+fun reverse(nil, l) = l | reverse(x::xs, l) = reverse(xs, x::l); 
+
+local
+    fun rev_helper (nil, a) = a
+      | rev_helper (h::t, a) = rev_helper (t, h::a)
+in
+    fun rev l = rev_helper (l, nil)
+end
+
+*******************
+
+[5,3,1,6,2,9,7]
+
+fun insert(less,x,nil) = [x]
+| insert(less,x,y::ys) = if less(x,y) then x::y::ys
+  else y::insert(less,x,ys);
+ 
+fun sort(less,nil) = nil
+  | sort(less,x::xs) = insert(less,x,sort(less,xs));
+ 
+ 
+fun less(x,y) = x < y; 
+
+
+sort(less,[9,5,8,2,7,1]);
+
+fun less(x:string,y) = x < y; 
+
+sort(less,["quan","yen","binh"]);
+
+-------------------
+***qsort
+
+fun partition (pivot, nil) = (nil,nil)
+ | partition (pivot, first :: others) =
+let
+val (smalls, bigs) =
+partition(pivot, others)
+in
+if first < pivot
+then (first::smalls, bigs)
+else (smalls, first::bigs)
+end
+
+fun qsort nil = nil
+ | qsort [singleton] = [singleton]
+ | qsort (first::rest) =
+let
+val (smalls, bigs) =
+partition(first,rest)
+in
+qsort(smalls) @ [first] @ qsort(bigs)
+end
+
+
+
+***qsort parametric
+fun partition (pivot, nil) lessThan = (nil,nil)
+ | partition (pivot, first :: others) lessThan =
+let
+val (smalls, bigs) =
+partition(pivot, others) lessThan
+in
+if (lessThan first pivot)
+then (first::smalls, bigs)
+else (smalls, first::bigs)
+end; 
+
+fun qsort nil lessThan = nil
+ | qsort [singleton] lessThan = [singleton]
+ | qsort (first::rest) lessThan =
+let
+val (smalls, bigs) =
+partition(first,rest) lessThan
+in
+qsort smalls lessThan @ [first]
+@ qsort bigs lessThan
+end; fun sanhxau (x:string) y = x < y;
+
+***************
+fun sanhxau (x:string) y = x < y;
+
+qsort ["hieu","anh","nghia"] sanhxau;
+
+fun map(f,nil) = nil |
+  map(f,x::xs) = f(x)::map(f,xs);
+
+fun cub(x) = x*x*x;
+
+val l = [1,2,3,4];
+
+map(cub,l);
+ 
+map(cub, [1,2,3,4]);
+
+fun not(x) = if x = true then false else true;
+
+val b = [true, true, false];
+
+map(not,b);
+
+fun reduce (unit, opn, nil) = unit
+  | reduce (unit, opn, h::t) = opn (h, reduce (unit, opn, t)); 
+
+fun add_up l = reduce (0, op +, l);
+fun mul_up l = reduce (1, op *, l);
+
+add_up (map(cub,[1,2,3,4,5]));
+mul_up (map(cub,[1,2,3,4,5]));
+
+fun map_red(nil, f, unit, g) = unit | map_red(t, f, unit, g) = reduce(unit, g, map(f,t));
+
+map_red([1,2,3,4],cub,1,op *);
+
+----------------------------------
+
+fun reverse xs =
+    let fun rev(nil, z) = z
+    |         rev(y::ys, z) = rev(ys, y::z)
+    in rev( xs, nil )
+end;
+
+reverse [1,2,3,4];
+--------------------------------------
+
+
+$$$$$$$$$$$$$$$$$$
+
+datatype ’a tree = Niltree |
+Maketree of ’a * (’a tree) * (’a tree); 
+
+fun insert (new:int) Niltree =
+Maketree(new,Niltree,Niltree)
+ | insert new (Maketree (root,l,r)) =
+if new < root
+then Maketree (root,(insert new l),r)
+else Maketree (root,l,(insert new r));
+
+fun buildtree [] = Niltree
+ | buildtree (fst :: rest) =
+insert fst (buildtree rest);
+
+
+fun find (elt:int) Niltree = false
+ | find elt (Maketree (root,left,right)) =
+if elt = root
+then true
+else if elt < root
+then find elt left
+else find elt right; 
+
+ (* elt > root *)
+
+fun bsearch elt list = find elt (buildtree list); 
+
+val x = bsearch 7  [9,1,10,3,7,5,4,8];
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+---------------
+(* Lists *)
+
+fun length nil = 0
+  | length (_::t) = 1 + length t
+
+fun append (nil, l) = l
+  | append (h::t, l) = h :: append (t, l)
+
+//fun rev nil = nil
+//  | rev (h::t) = rev t @ [h]
+
+local
+    fun rev_helper (nil, a) = a
+      | rev_helper (h::t, a) = rev_helper (t, h::a)
+in
+    fun rev l = rev_helper (l, nil)
+end
+
+-------------------
+fun map' (f, nil) = nil
+  | map' (f, h::t) = (f h) :: map' (f, t)
+
+val constantly = fn k => (fn a => k)
+fun constantly k a = k
+
+fun map f nil = nil
+  | map f (h::t) = (f h) :: (map f t)
+
+fun curry f x y = f (x, y)
+
+fun map f l = curry map' f l
+
+fun add_up nil = 0
+  | add_up (h::t) = h + add_up t
+
+fun mul_up nil = 1
+  | mul_up (h::t) = h * mul_up t
+
+fun reduce (unit, opn, nil) = unit
+  | reduce (unit, opn, h::t) = opn (h, reduce (unit, opn, t))
+
+fun add_up l = reduce (0, op +, l)
+fun mul_up l = reduce (1, op *, l)
+
+fun mystery l = reduce (nil, op ::, l)
+
+fun better_reduce (unit, opn, l) =
+    let
+        fun red nil = unit
+          | red (h::t) = opn (h, red t)
+    in
+        red l
+    end
+
+fun staged_reduce (unit, opn) =
+    let
+        fun red nil = unit
+          | red (h::t) = opn (h, red t)
+    in
+        red
+    end
+
+fun curried_reduce (unit, opn) nil = unit
+  | curried_reduce (unit, opn) (h::t) = opn (h, curried_reduce (unit, opn) t)
+
+fun append (nil, l) = l
+  | append (h::t, l) = h :: append(t,l)
+
+fun curried_append nil l = l
+  | curried_append (h::t) l = h :: append t l
+
+fun staged_append nil = fn l => l
+  | staged_append (h::t) =
+    let
+        val tail_appender = staged_append t
+    in
+        fn l => h :: tail_appender l
+    end
+
+%%%%%%%%%%
+
+* Exceptions *)
+
+fun hd (h::_) = h
+
+hd nil
+
+exception Factorial
+
+fun checked_factorial n =
+    if n < 0 then
+	raise Factorial
+    else if n=0 then
+	1
+	 else
+	     n * checked_factorial (n-1)
+
+exception Factorial
+
+local
+    fun fact 0 = 1
+      | fact n = n * fact (n-1)
+in
+    fun checked_factorial n =
+	if n >= 0 then
+	    fact n
+	else
+	    raise Factorial
+end 
+
+fun factorial_driver () =
+    let
+        val input = read_integer ()
+        val result = makestring (checked_factorial input)
+    in
+        print result
+    end
+    handle Factorial => print "Out of range.\n"
+
+
+fun factorial_driver () =
+    let
+        val input = read_integer ()
+        val result = makestring (checked_factorial input)
+        val _ = print result
+    in
+        factorial_driver ()
+    end
+    handle EndOfFile => print "Done.\n"
+         | SyntaxError =>
+	   let val _ = print "Syntax error.\n" in factorial_driver () end
+         | Factorial =>
+           let val _ = print "Out of range.\n" in factorial_driver () end
+
+exception Change
+
+fun change _ 0 = nil
+  | change nil _ = raise Change
+  | change (coin::coins) amt =
+    if coin > amt then
+	change coins amt
+    else
+       (coin :: change (coin::coins) (amt-coin))
+       handle Change => change coins amt
+
+-----------------------------------
+
+datatype expr = Numeral of int | Plus of expr * expr | Times of expr * expr
+
+fun eval (Numeral n) = Numeral n
+  | eval (Plus (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1+n2)
+    end
+  | eval (Times (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1*n2)
+    end
+
+datatype expr = 
+    Numeral of int | Plus of expr * expr | Times of expr * expr | Recip of expr
+
+fun eval (Numeral n) = Numeral n
+  | eval (Plus (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1+n2)
+    end
+  | eval (Times (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1*n2)
+    end
+  | eval (Recip e) = 
+    let
+	val Numeral n = eval e
+    in
+	Numeral (1 div n)
+    end
+------------------------------------------
+Binary Tree
+
+datatype color = Red | Green | Blue;
+
+datatype ’a tree = Niltree |
+Maketree of ’a * (’a tree) * (’a tree); 
+
+fun insert (new:int) Niltree =
+Maketree(new,Niltree,Niltree)
+ | insert new (Maketree (root,l,r)) =
+if new < root
+then Maketree (root,(insert new l),r)
+else Maketree (root,l,(insert new r))
+
+fun buildtree [] = Niltree
+ | buildtree (fst :: rest) =
+insert fst (buildtree rest)
+
+fun find (elt:int) Niltree = false
+ | find elt (Maketree (root,left,right)) =
+if elt = root
+then true
+else if elt < root
+then find elt left
+else find elt right (* elt > root *)
+
+fun bsearch elt list =
+find elt (buildtree list); 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+fun square (x) = x * x; 
+
+fun mult (a, x) = a * x;
+
+
+fun fast_exp (a, 0) = 1
+  | fast_exp (a, n) =
+    if n mod 2 = 0 then
+       square (fast_exp (a, n div 2))
+    else
+       mult (a, fast_exp (a, n-1)) ;
+
+
+fun iterative_fast_exp (0, a) = a
+  | iterative_fast_exp (n, a) =
+    if n mod 2 = 0 then
+       iterative_fast_exp (n div 2, iterative_fast_exp (n div 2, a))
+    else
+       iterative_fast_exp (n-1, 2*a) ;
+
+
+fun generalized_iterative_fast_exp (b, 0, a) = a
+  | generalized_iterative_fast_exp (b, n, a) =
+    if n mod 2 = 0 then
+       generalized_iterative_fast_exp (b*b, n div 2, a)
+    else
+       generalized_iterative_fast_exp (b, n-1, b*a) ;
+
+fun generalized_iterative_fast_exp_mod (b, 0, a, m) = (a mod m)
+  | generalized_iterative_fast_exp_mod (b, n, a, m) =
+    if n mod 2 = 0 then
+       generalized_iterative_fast_exp_mod (((b*b) mod m), n div 2, a, m)
+    else
+       generalized_iterative_fast_exp_mod (b, n-1, ((b*a) mod m), m) ;
+
+
+
+
+fun gcd (m:int, 0):int = m
+  | gcd (0, n:int):int = n
+  | gcd (m:int, n:int):int =
+    if m>n then gcd (m mod n, n) else gcd (m, n mod m) ;
+
+
+
+fun ggcd (0, n) = (n, 0, 1)
+  | ggcd (m, 0) = (m, 1, 0)
+  | ggcd (m, n) =
+    if m>n then
+       let
+           val (d, a, b) = ggcd (m mod n, n)
+       in
+           (d, a, b - a*(m div n))
+       end
+    else
+       let
+           val (d, a, b) = ggcd (m, n mod m)
+       in
+           (d, a - b*(n div m), b)
+       end
+
+
+
+exception GCD_ERROR
+
+fun checked_gcd (m, n) =
+    let
+        val (d, a, b) = ggcd (m, n)
+    in
+        if m mod d = 0 andalso n mod d = 0 andalso d = a*m+b*n then
+           d
+        else
+           raise GCD_ERROR
+    end
+
+fun rev_gcd (m, n) =
+    let
+        val (d, a, b) = ggcd (m, n)
+    in
+        if d = a*m+b*n then
+           a
+        else
+           raise GCD_ERROR
+    end
+
+
+fun fact_helper (0,r:int) = r
+  | fact_helper (n:int,r:int) = fact_helper (n-1,n*r)
+
+fun factorial n:int = fact_helper (n, 1)
+
+$$$$$$$$$$$$$$$$$$
+
+datatype ’a tree = Niltree |
+Maketree of ’a * (’a tree) * (’a tree); 
+
+fun insert (new:int) Niltree =
+Maketree(new,Niltree,Niltree)
+ | insert new (Maketree (root,l,r)) =
+if new < root
+then Maketree (root,(insert new l),r)
+else Maketree (root,l,(insert new r))
+
+fun buildtree [] = Niltree
+ | buildtree (fst :: rest) =
+insert fst (buildtree rest)
+
+fun find (elt:int) Niltree = false
+ | find elt (Maketree (root,left,right)) =
+if elt = root
+then true
+else if elt < root
+then find elt left
+else find elt right (* elt > root *)
+
+fun bsearch elt list =
+find elt (buildtree list); 
+
+val x = bsearch 7  [9,1,10,3,7,5,4,8];
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+datatype 'a tree = LF of 'a | ND of ('a tree)*('a tree);
+
+exception No_Subtree;
+
+fun lsub (LF x) = raise No_Subtree | lsub(ND(x,y)) = x;
+
+val t:int tree = ND(ND(LF 1,LF 2),LF 3); 
+
+lsub(t);
+
+val t:int tree = LF 3; 
+
+---------
+fun prod(LF x) = x | prod(ND(x,y)) = prod(x)*prod(y);
+
+fun prod(tree) = 
+    let exception Zero
+      fun p(LF x) = if x = 0 then (raise Zero) else x
+           | p(ND(x,y)) = p(x)*p(y)
+    in
+      p(tree) handle Zero => 0
+    end;
+
+val t:int tree = ND(ND(LF 0,LF 2),LF 3); 
+
+------------------------
+
+
+fun map(f,nil) = nil |
+  map(f,x::xs) = f(x)::(map(f,xs));
+
+fun cub(x) = x*x*x;
+
+val l = [1,2,3,4];
+
+map(cub,l);
+ 
+fun not(x) = if x = true then false else true;
+
+val b = [true, true, false];
+
+map(not,b);
+
+
+fun reduce (unit, opn, nil) = unit
+  | reduce (unit, opn, h::t) = opn (h, reduce (unit, opn, t))
+
+fun add_up l = reduce (0, op +, l)
+fun mul_up l = reduce (1, op *, l)
+
+
+----------------------------------
+
+
+(fn f => fn x => f(f(x))) (fn y => y + 1) 3;
+
+
+copy by reference
+
+fun  f (x : int ref) =
+    ( x := !x+1;  !x  );
+val y = ref 0;
+f(y) + !y;
+
+-----
+
+fun f (z : int) =
+    let val x = ref z in 
+        x := !x+1; !x 
+    end;
+val y = ref 0;
+f(!y) + !y;
+
+------------
+
+val x = 1;
+fun g(z) = x+z; 
+fun f(y) = 
+  let  val x = y+1 in 
+    g(y*x)
+  end; 
+
+f(3);
+
+------------
+val x = 4;
+   fun f(y) = x*y;
+      fun g(h) = let
+               val x=7 
+                in 
+                h(3) + x
+      end;    
+   g(f);
+--------
+
+fun fact_helper (0,r:int) = r
+  | fact_helper (n:int,r:int) = fact_helper (n-1,n*r)
+
+fun factorial n:int = fact_helper (n, 1)
+
+-----------
+Suy luan kieu:
+
+fun f(x) = x+2;
+
+fun f(g,h) = g(h(0));
+
+fun apply(f, x) = f(x);
+
+fun sum(x) = x + sum(x-1);
+
+---------
+fun qsort nil = nil
+ | qsort [singleton] = [singleton]
+ | qsort (first::rest) =
+let
+val (smalls, bigs) =
+partition(first,rest)
+in
+append(append(qsort(smalls),[first]),qsort(bigs))
+end
+
+----------------
+
+
+
+
+signature QUEUE =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+signature QUEUE_WITH_EMPTY =
+  sig
+    include QUEUE
+    val is_empty : 'a queue -> bool
+  end
+
+signature QUEUE_AS_LISTS =
+  QUEUE where type 'a queue = 'a list * 'a list
+
+signature QUEUE_AS_LIST = sig
+  type 'a queue = 'a list
+  exception Empty
+  val empty : 'a list
+  val insert : 'a * 'a list -> 'a list
+  val remove : 'a list -> 'a * 'a list
+  val is_empty : 'a list -> bool
+end
+
+signature MERGEABLE_QUEUE =
+  sig
+    include QUEUE
+    val merge : 'a queue * 'a queue -> 'a queue
+  end
+
+signature MERGEABLE_INT_QUEUE =
+  sig
+    include QUEUE
+    val merge : int queue * int queue -> int queue
+  end
+
+signature RBT_DT =
+  sig
+    datatype 'a rbt =
+      Empty |
+      Red of 'a rbt * 'a * 'a rbt |
+      Black of 'a rbt * 'a * 'a rbt
+  end
+
+signature RBT = 
+  sig
+    type 'a rbt
+    val Empty : 'a rbt
+    val Red : 'a rbt * 'a * 'a rbt -> 'a rbt
+  end
+
+*********************
+Chuong 20
+signature QUEUE =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+structure Queue :> QUEUE =
+  struct
+    type 'a queue = 'a list * 'a list
+    val empty = (nil, nil)
+    fun insert (x, (bs, fs)) = (x::bs, fs)
+    exception Empty
+    fun remove (nil, nil) = raise Empty
+      | remove (bs, f::fs) = (f, (bs, fs))
+      | remove (bs, nil) = remove (nil, rev bs)
+  end
+
+signature PQ =
+  sig
+    type elt
+    val lt : elt * elt -> bool
+    type queue
+    exception Empty
+    val empty : queue
+    val insert : elt * queue -> queue
+    val remove : queue -> elt * queue
+  end
+
+exception X;
+(let fun f(y) = raise X
+     and g(h) = h(1) 
+                     handle X => 2
+in
+     g(f) handle X => 4
+end) handle X => 6;
+
+val x=6;
+(let fun f(y) = x
+     and g(h) = let val x=2 in
+                      h(1) end
+  in
+     let val x=4 in g(f) end
+end);
+
+
+
+
+
+
+Chuong 2
+(* Types, Values, and Effects *)
+
+3 ;
+3 + 4 ;
+4 div 3 ;
+4 mod 3 ;
+
+size 45 ;
+#"1" + 1 ;
+#"2" ^ "1" ;
+3.14 + 2 ;
+
+if 1<2 then "less" else "greater" ;
+
+if 1<2 then 0 else 1 div 0 ;
+
+******************
+Chuong 3:
+(* Variables and Declarations *)
+
+type float = real
+type count = int and average = real 
+
+type float = real and average = float
+
+val m : int = 3+2 
+val pi : real = 3.14 and e : real = 2.17
+
+val x : float = Math.sin Math.pi
+
+val m : int = 3+2 
+val n : int = m*m 
+
+val n : real = 2.17
+
+let
+    val m:int = 3
+    val n:int = m*m
+in
+    m*n
+end 
+
+val m:int = 2
+val r:int =
+    let
+	val m:int=3
+	val n:int=m*m
+    in
+	m*n
+    end * m
+
+val m : int = 0 
+val x : real = Math.sqrt(2.0) 
+val c : char = #"a"
+**************
+Chuong 4
+(* Functions *)
+
+fn x : real => sqrt (sqrt x)
+
+(fn x : real => sqrt (sqrt x)) (16.0)
+
+val fourthroot : real -> real =
+    (fn x : real => sqrt (sqrt x))
+
+fun fourthroot (x:real):real = sqrt (sqrt x)
+
+fun pal (s:string):string = s ^ (rev s)
+fun double (n:int):int = n + n
+fun square (n:int):int = n * n
+fun halve (n:int):int = n div 2
+fun is_even (n:int):bool = (n mod 2 = 0)
+
+fun f(x:real):real = x+x
+fun g(y:real):real = y+y
+
+val x:real = 2.0
+fun h(y:real):real = x+y
+*************
+Chuong 5
+(* Products and Patterns *)
+
+val pair : int * int = (2, 3)
+val triple : int * real * string = (2, 2.0, "2")
+val quadruple 
+    : int * int * real * real 
+    = (2,3,2.0,3.0)
+val pair_of_pairs
+    : (int * int) * (real * real)
+    = ((2,3),(2.0,3.0))
+
+val pair : int * int = (1+1, 5-2)
+
+val (m:int, n:int) = (7+1,4 div 2)
+val (m:int, r:real, s:string) = (7, 7.0, "7")
+val ((m:int,n:int), (r:real, s:real)) = ((4,5),(3.1,2.7))
+val (m:int, n:int, r:real, s:real) = (4,5,3.1,2.7)
+
+val (m:int,n:int,r:real,s:real) = ((4,5),(3.1,2.7))
+val (m:int, r:real) = (7+1,4 div 2)
+val (m:int, r:real, s:string) = (7, 7.0, "7")
+
+val ((m:int,n:int), (r:real, s:real)) = ((2,3),(2.0,3.0))
+
+type hyperlink =
+     { protocol : string,
+        address : string,
+        display : string }
+
+val mailto_rwh : hyperlink =
+    { protocol="mailto",
+       address="rwh@cs.cmu.edu",
+       display="Robert Harper" }
+
+val { protocol=prot, display=disp, address=addr } = mailto_rwh
+val { protocol=prot, address=_, display=_ } = mailto_rwh
+val { protocol=prot,... } = intro_home
+val { protocol, address, display } = mailto_rwh
+
+val dist : real * real -> real = fn (x:real, y:real) => sqrt (x*x + y*y)
+
+fun dist (x:real, y:real):real = sqrt (x*x + y*y)
+
+
+fun dist2 (x:real, y:real):real*real = (sqrt (x*x+y*y), abs(x-y))
+
+fun dist (p:real*real):real = sqrt((#1 p)*(#1 p)+(#2 p)*(#2 p))
+**********************
+Chuong 6
+(* Clausal Function Definitions *)
+
+val 0 = 1-1
+val (0,x) = (1-1, 34)
+val (0, #"0") = (2-1, #"0")
+
+val recip : int -> int = fn 0 => 0 | n:int => 1 div n
+
+fun recip 0 = 0
+  | recip (n:int) = 1 div n
+fun not true = false
+  | not false = true
+
+fun recip (n:int) = 1 div n
+  | recip 0 = 0
+
+fun is_numeric #"0" = true
+  | is_numeric #"1" = true
+  | is_numeric #"2" = true
+  | is_numeric #"3" = true
+  | is_numeric #"4" = true
+  | is_numeric #"5" = true
+  | is_numeric #"6" = true
+  | is_numeric #"7" = true
+  | is_numeric #"8" = true
+  | is_numeric #"9" = true
+
+fun is_numeric #"0" = true
+  | is_numeric #"1" = true
+  | is_numeric #"2" = true
+  | is_numeric #"3" = true
+  | is_numeric #"4" = true
+  | is_numeric #"5" = true
+  | is_numeric #"6" = true
+  | is_numeric #"7" = true
+  | is_numeric #"8" = true
+  | is_numeric #"9" = true
+  | is_numeric _ = false
+*************
+Chuong 7
+(* Recursive Functions *)
+
+val rec factorial : int->int = fn 0 => 1 | n:int => n * factorial (n-1)
+
+fun factorial 0 = 1
+  | factorial (n:int) = n * factorial (n-1)
+
+fun fact_helper (0,r:int) = r
+  | fact_helper (n:int,r:int) = fact_helper (n-1,n*r)
+
+fun factorial n:int = fact_helper (n, 1)
+
+local
+    fun fact_helper (0,r:int) = r
+      | fact_helper (n:int,r:int) = fact_helper (n-1,n*r)
+in
+    fun factorial (n:int) = fact_helper (n,1)
+end
+
+(* for n>=0, fib n evaluates to the nth Fibonacci number *)
+fun fib 0 = 1
+  | fib 1 = 1
+  | fib (n:int) = fib (n-1) + fib (n-2)
+
+(* for n>=0, fib' n evaluates to (a, b), where a is the nth
+   Fibonacci number and b is the (n-1)st *)
+fun fib' 0 = (1, 0)
+  | fib' 1 = (1, 1)
+  | fib' (n:int) =
+    let
+	val (a:int, b:int) = fib' (n-1)
+    in
+	(a+b, a)
+    end
+
+fun even 0 = true
+  | even n = odd (n-1)
+and odd 0 = false
+  | odd n = even (n-1)
+
+**************
+Chuong 8
+(* Type Inference *)
+
+fn s:string => s ^ "\n".
+
+(fn x=>x)(0)
+
+(fn x=>x)(fn x=>x)(0)
+
+val I : 'a->'a = fn x=>x
+
+fun I(x:'a):'a = x
+
+val I = fn x=>x
+
+fun I(x) = x
+
+val J = I I
+
+fun J x = I I x
+
+val l = nil @ nil
+
+fn x:int => x+x
+fn x:real => x+x
+
+(fn x => x+x)(3)
+
+let
+    val double = fn x => x+x
+in
+    (double 3, double 4)
+end
+let
+    val double = fn x => x+x
+in
+    (double 3.0, double 4.0)
+end
+
+let
+    val double = fn x => x+x
+in
+    (double 3, double 3.0)
+end
+
+fun #name {name=n:string, ...} = n
+
+fn r : \{name:string,address:string,salary:int\} =>
+   (\#name r, \#address r)
+
+fn r => (\#name r, \#address r)
+
+fun f(g) = g(g(2)); 
+
+*************
+Chuong 9
+(* Lists *)
+
+fun length nil = 0
+  | length (_::t) = 1 + length t
+
+fun append (nil, l) = l
+  | append (h::t, l) = h :: append (t, l)
+
+fun rev nil = nil
+  | rev (h::t) = rev t @ [h]
+
+local
+    fun rev_helper (nil, a) = a
+      | rev_helper (h::t, a) = rev_helper (t, h::a)
+in
+    fun rev l = rev_helper (l, nil)
+end
+***********
+Chuong 10
+(* Datatype's *)
+
+datatype suit = Spades | Hearts | Diamonds | Clubs
+
+fun outranks (Spades, Spades) = false
+  | outranks (Spades, _) = true
+  | outranks (Hearts, Spades) = false
+  | outranks (Hearts, Hearts) = false
+  | outranks (Hearts, _) = true
+  | outranks (Diamonds, Clubs) = true
+  | outranks (Diamonds, _) = false
+  | outranks (Clubs, _) = false
+
+datatype 'a option = NONE | SOME of 'a
+
+fun expt (NONE, n) = expt (SOME 2, n)
+  | expt (SOME b, 0) = 1
+  | expt (SOME b, n) =
+    if n mod 2 = 0 then expt (SOME b*b, n div 2) else b * expt (SOME b, n-1)
+
+datatype 'a tree = Empty | Node of 'a tree * 'a * 'a tree
+
+val t: int tree = Node(Node(Empty,1,Node(Empty,2,Empty)),3,Node(Empty,4,Empty)); 
+
+fun height Empty = 0
+  | height (Node (lft, _, rht)) = 1 + Math.max (height lft, height rht)
+
+fun size Empty = 0
+  | size (Node (lft, _, rht)) = 1 + size lft + size rht
+
+fun size empty = 0
+  | size (Node (lft, _, rht)) = 1 + size lft + size rht
+
+datatype 'a tree = Empty | Node of 'a * 'a forest
+and 'a forest = Nil | Cons of 'a tree * 'a forest
+
+fun size_tree Empty = 0
+  | size_tree (Node (_, f)) = 1 + size_forest f
+and size_forest Nil = 0
+  | size_forest (Cons (t, f')) = size_tree t + size_forest f'
+
+datatype 'a tree = Empty | Node of 'a branch * 'a branch
+and 'a branch = Branch of 'a * 'a tree
+
+fun collect Empty = nil
+  | collect (Node (Branch (ld, lt), Branch (rd, rt))) =
+    ld :: rd :: (collect lt) @ (collect rt)
+
+datatype int_or_string = Int of int | String of string
+
+datatype expr = Numeral of int | Plus of expr * expr | Times of expr * expr
+
+fun eval (Numeral n) = Numeral n
+  | eval (Plus (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1+n2)
+    end
+  | eval (Times (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1*n2)
+    end
+
+datatype expr = 
+    Numeral of int | Plus of expr * exp | Times of expr * expr | Recip of expr
+
+fun eval (Numeral n) = Numeral n
+  | eval (Plus (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1+n2)
+    end
+  | eval (Times (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1*n2)
+    end
+  | eval (Recip e) = 
+    let
+	val Numeral n = eval e
+    in
+	Numeral (1 div n)
+    end
+***********
+Chuong 11
+(* Functionals *)
+
+val x = 2            (* x=2 *)
+val y = x*x          (* y=4 *)
+val x = y*x          (* x=8 *)
+val y = x*y          (* y=32 *)
+
+val x = 2
+fun f y = x+y
+val x = 3
+val z = f 4
+
+fun map' (f, nil) = nil
+  | map' (f, h::t) = (f h) :: map' (f, t)
+
+val constantly = fn k => (fn a => k)
+fun constantly k a = k
+
+fun map f nil = nil
+  | map f (h::t) = (f h) :: (map f t)
+
+fun curry f x y = f (x, y)
+
+fun map f l = curry map' f l
+
+fun map_f = curry map' f
+
+fun add_up nil = 0
+  | add_up (h::t) = h + add_up t
+
+fun mul_up nil = 1
+  | mul_up (h::t) = h * mul_up t
+
+fun reduce (unit, opn, nil) = unit
+  | reduce (unit, opn, h::t) = opn (h, reduce (unit, opn, t))
+
+
+fun add_up l = reduce (0, op +, l)
+fun mul_up l = reduce (1, op *, l)
+
+fun mystery l = reduce (nil, op ::, l)
+
+fun better_reduce (unit, opn, l) =
+    let
+        fun red nil = unit
+          | red (h::t) = opn (h, red t)
+    in
+        red l
+    end
+
+fun staged_reduce (unit, opn) =
+    let
+        fun red nil = unit
+          | red (h::t) = opn (h, red t)
+    in
+        red
+    end
+
+val g = stage_reduce(0, op +) 
+
+fun nhan(x,y) = x*y
+
+val g = staged_reduce(1, nhan)
+
+
+fun curried_reduce (unit, opn) nil = unit
+  | curried_reduce (unit, opn) (h::t) = opn (h, curried_reduce (unit, opn) t)
+
+val cr = curried_reduce (0, op +)
+
+fun append (nil, l) = l
+  | append (h::t, l) = h :: append(t,l)
+
+fun curried_append nil l = l
+  | curried_append (h::t) l = h :: curried_append t l
+
+val ca_1_4 = curried_append [1,2,3,4]
+
+fun staged_append nil = (fn l => l)
+  | staged_append (h::t) =
+    let
+        val tail_appender = staged_append t
+    in
+        fn l => h :: tail_appender l
+    end
+
+val ca_1_4 = staged_append [1,2,3,4];
+
+*******************
+Chuong 12
+(* Exceptions *)
+
+fun hd (h::_) = h
+
+hd nil
+
+exception Factorial
+
+fun checked_factorial n =
+    if n < 0 then
+	raise Factorial
+    else if n=0 then
+	1
+	 else
+	     n * checked_factorial (n-1)
+
+exception Factorial
+
+local
+    fun fact 0 = 1
+      | fact n = n * fact (n-1)
+in
+    fun checked_factorial n =
+	if n >= 0 then
+	    fact n
+	else
+	    raise Factorial
+end 
+
+fun factorial_driver () =
+    let
+        val input = read_integer ()
+        val result = makestring (checked_factorial input)
+    in
+        print result
+    end
+    handle Factorial => print "Out of range.\n"
+
+
+fun factorial_driver () =
+    let
+        val input = read_integer ()
+        val result = makestring (checked_factorial input)
+        val _ = print result
+    in
+        factorial_driver ()
+    end
+    handle EndOfFile => print "Done.\n"
+         | SyntaxError =>
+	   let val _ = print "Syntax error.\n" in factorial_driver () end
+         | Factorial =>
+           let val _ = print "Out of range.\n" in factorial_driver () end
+
+exception Change
+
+fun change _ 0 = nil
+  | change nil _ = raise Change
+  | change (coin::coins) amt =
+    if coin > amt then
+	change coins amt
+    else
+       (coin :: change (coin::coins) (amt-coin))
+       handle Change => change coins amt
+****************
+Chuong 13
+(* References *)
+
+val r = ref 0
+val s = ref 0
+val _ = r := 3
+val x = !s + !r
+val _ = t := 5
+val y = !s + !r
+val z = !t + !r
+
+fun rot3 (a, b, c) =
+    let
+        val t = !a
+    in
+        a := !b; b := !c; c := t
+    end
+
+fun rot3 (a, b, c) =
+    let
+        val (x, y, z) = (!a, !b, !c)
+    in
+        a := y; b := z; c := x
+    end
+
+fun rot3 (a, b, c) =
+    let
+        val (ref x, ref y, ref z) = (a, b, c)
+    in
+        a := y; b := z; c := x
+    end
+
+fun imperative_fact (n:int) =
+    let
+        val result = ref 1
+        val i = ref 0
+        fun loop () =
+            if !i = n then
+               ()
+            else
+               (i := !i + 1; result := !result * !i; loop ())
+    in
+        loop (); !result
+    end
+
+local
+      val counter = ref 0
+in
+      fun tick () = (counter := !counter + 1; !counter)
+      fun reset () = (counter := 0)
+end
+
+fun new_counter () =
+    let
+        val counter = ref 0
+        fun tick () = (counter := !counter + 1; !counter)
+        fun reset () = (counter := 0)
+    in
+        { tick = tick, reset = reset }
+    end
+
+val c1 = new_counter ()
+val c2 = new_counter ()
+#tick c1;                 (* 1 *)
+#tick c1;                 (* 2 *)
+#tick c2;                 (* 1 *)
+#reset c1;
+#tick c1;                 (* 1 *)
+#tick c2;                 (* 2 *)
+
+(* possibly circular lists *)
+
+datatype 'a pcl = Pcl of 'a pcell ref
+and 'a pcell = Nil | Cons of 'a * 'a pcl;
+
+fun cons (h, t) = Pcl (ref (Cons (h, t)));
+fun nill () = Pcl (ref Nil);
+
+fun phd (Pcl (ref (Cons (h, _)))) = h;
+fun ptl (Pcl (ref (Cons (_, t)))) = t;
+
+fun stl (Pcl (r as ref (Cons (h, t))), u) =
+    (r := Cons (h, u));
+
+val finite = cons (4, cons (3, cons (2, cons (1, nill ()))));
+
+val tail = cons (1, nill());
+val infinite = cons (4, cons (3, cons (2, tail)));
+val _ = stl (tail, infinite)
+
+local
+  fun race (Nil, Nil) = 0
+    | race (Cons (_, Pcl (ref c)), Nil) =
+      1 + race (c, Nil)
+    | race (Cons (_, Pcl (ref c)), Cons (_, Pcl (ref Nil))) =
+      1 + race (c, Nil)
+    | race (Cons (_, l), Cons (_, Pcl (ref (Cons (_, m))))) =
+      1 + race' (l, m)
+  and race' (Pcl (r as ref c), Pcl (s as ref d)) =
+      if r=s then 0 else race (c, d)
+in
+  fun size (Pcl (ref c)) = race (c, c)
+end
+
+size finite;
+size infinite;
+
+fun C 1 = 1
+  | C n = sum (fn k => (C k) * (C (n-k))) (n-1)
+
+local
+       val limit : int = 100
+       val memopad : int option array = Array.array (limit, NONE)
+in
+       fun C' 1 = 1
+         | C' n = sum (fn k => (C k) * (C (n-k))) (n-1)
+       and C n =
+           if n < limit then
+              case Array.sub (memopad, n)
+                of SOME r => r
+                 | NONE =>
+                   let
+                       val r = C' n
+                   in
+                       Array.update (memopad, n, SOME r);
+                       r
+                   end
+            else
+               C' n
+end
+**************
+Chuong 14
+(* Input/Output *)
+
+print "hello\n"
+**********
+Chuong 15
+Compiler.Control.Lazy.enabled := true;
+open Lazy;
+
+datatype lazy 'a stream = Cons of 'a * 'a stream;
+
+val rec lazy ones = Cons (1, ones);
+
+fun shd (Cons (x, _)) = x;
+fun stl (Cons (_, s)) = s;
+fun lstl (Cons (_, s)) = s;
+
+val rec lazy s = (print "."; Cons (1, s));
+val s' = stl s;                              (* prints "." *)
+val Cons _ = s';                             (* silent *)
+
+val rec lazy s = (print "."; Cons (1, s));
+val s'' = lstl s;                            (* silent *)
+val Cons _ = s'';                            (* prints "." *)
+
+fun take 0 s = nil
+  | take n (Cons (x, s)) = x :: take (n-1) s;
+
+fun smap f =
+    let
+	fun lazy loop (Cons (x, s)) = Cons (f x, loop s)
+    in
+	loop
+    end;
+
+fun succ n = n+1;
+val one_plus = smap succ;
+val rec lazy nats = Cons (0, one_plus nats);
+
+fun sfilter pred =
+    let
+	fun lazy loop (Cons (x, s)) =
+	    if pred x then
+	       Cons (x, loop s)
+	    else
+	       loop s
+    in
+	loop
+    end;
+
+fun m mod n = m - n * (m div n);
+fun divides m n = n mod m = 0;
+
+fun lazy sieve (Cons (m, s)) = Cons (m, sieve (sfilter (not o (divides m)) s));
+val nats2 = stl (stl nats);
+val primes = sieve nats2;
+
+val rec lazy s = Cons ((print "."; 1), s);
+val Cons (h, _) = s;                      (* prints ".", binds h to 1 *)
+val Cons (h, _) = s;                      (* silent, binds h to 1 *)
+*************
+Chuong 18
+(* Signatures and Structures *)
+
+signature QUEUE =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+signature QUEUE_WITH_EMPTY =
+  sig
+    include QUEUE
+    val is_empty : 'a queue -> bool
+  end
+
+signature QUEUE_WITH_EMPTY =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+    val is_empty : 'a queue -> bool
+  end
+
+signature QUEUE_AS_LISTS =
+  QUEUE where type 'a queue = 'a list * 'a list
+
+signature QUEUE_AS_LISTS =
+  sig
+    type 'a queue = 'a list * 'a list
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+(* error! *)
+signature QUEUE_AS_LISTS_AS_LIST =
+  QUEUE_AS_LISTS where type 'a queue = 'a list
+
+signature QUEUE_AS_LIST =
+  sig
+    type 'a queue = 'a list
+    exception Empty
+    val empty : 'a list
+    val insert : 'a * 'a list -> 'a list
+    val remove : 'a list -> 'a * 'a list
+  end
+
+structure Queue =
+  struct
+    type 'a queue = 'a list * 'a list
+    exception Empty
+    val empty = nil
+    fun insert (x, (b,f)) = (x::b, f)
+    fun remove (nil, nil) = raise Empty
+      | remove (bs, nil) = remove (nil, rev bs)
+      | remove (bs, f::fs) = (f, (bs, fs))
+  end
+
+---------------------
+
+val q = Queue.insert (1, [4,5,6])
+
+val q = Queue.insert (2, Queue.insert (1, Queue.empty))
+
+structure Q = Queue
+val q = Q.insert (2, Q.insert (1, Q.empty))
+
+open Queue
+val q = insert (2, insert (1, empty))
+*************************
+Chuong 19
+signature QUEUE =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+signature QUEUE_WITH_EMPTY =
+  sig
+    include QUEUE
+    val is_empty : 'a queue -> bool
+  end
+
+signature QUEUE_AS_LISTS =
+  QUEUE where type 'a queue = 'a list * 'a list
+
+signature QUEUE_AS_LIST = sig
+  type 'a queue = 'a list
+  exception Empty
+  val empty : 'a list
+  val insert : 'a * 'a list -> 'a list
+  val remove : 'a list -> 'a * 'a list
+  val is_empty : 'a list -> bool
+end
+
+signature MERGEABLE_QUEUE =
+  sig
+    include QUEUE
+    val merge : 'a queue * 'a queue -> 'a queue
+  end
+
+signature MERGEABLE_INT_QUEUE =
+  sig
+    include QUEUE
+    val merge : int queue * int queue -> int queue
+  end
+
+signature RBT_DT =
+  sig
+    datatype 'a rbt =
+      Empty |
+      Red of 'a rbt * 'a * 'a rbt |
+      Black of 'a rbt * 'a * 'a rbt
+  end
+
+signature RBT = 
+  sig
+    type 'a rbt
+    val Empty : 'a rbt
+    val Red : 'a rbt * 'a * 'a rbt -> 'a rbt
+  end
+
+*********************
+Chuong 20
+signature QUEUE =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+structure Queue :> QUEUE =
+  struct
+    type 'a queue = 'a list * 'a list
+    val empty = (nil, nil)
+    fun insert (x, (bs, fs)) = (x::bs, fs)
+    exception Empty
+    fun remove (nil, nil) = raise Empty
+      | remove (bs, f::fs) = (f, (bs, fs))
+      | remove (bs, nil) = remove (nil, rev bs)
+  end
+
+signature PQ =
+  sig
+    type elt
+    val lt : elt * elt -> bool
+    type queue
+    exception Empty
+    val empty : queue
+    val insert : elt * queue -> queue
+    val remove : queue -> elt * queue
+  end
+
+signature STRING_PQ = PQ where type elt = string
+
+signature ORDERED =
+  sig
+    type t
+    val lt : t * t -> bool
+  end
+
+structure IntLt : ORDERED =
+  struct
+    type t = int
+    val lt = (op <)
+  end
+
+structure IntDiv : ORDERED =
+  struct
+    type t = int
+    fun lt (m, n) = (n mod m = 0)
+  end
+
+
+structure Q = Queue
+
+val Myq = Q.empty
+
+val Myq = Q.insert(1, Myq)
+
+val Myq = Q.insert(2, Myq)
+
+val Myq = Q.insert(3, Myq)
+
+val Myq = Q.insert(4, Myq)
+
+val (next, Myq) = Q.remove(Myq)
+
+********************
+Chuong 21
+signature MY_STRING_DICT =
+  sig
+    type 'a dict
+    val empty : 'a dict
+    val insert : 'a dict * string * 'a -> 'a dict
+    val lookup : 'a dict * string -> 'a option
+  end
+
+structure MyStringDict :> MY_STRING_DICT =
+  sig
+    datatype 'a dict =
+      Empty |
+      Node of 'a dict * string * 'a * 'a dict
+    val empty = Empty
+    fun insert (None, k, v) = Node (Empty, k, v, Empty)
+    fun lookup (Empty, _) = NONE
+      | lookup (Node (dl, l, v, dr), k) =
+        if k < l then		(* string comparison *)
+           lookup (dl, k)
+        else if k > l then      (* string comparison *)
+           lookup (dr, k)
+        else
+           v
+  end
+
+signature MY_INT_DICT =
+  sig
+    type 'a dict
+    val empty : 'a dict
+    val insert : 'a dict * int * 'a -> 'a dict
+    val lookup : 'a dict * int -> 'a option
+  end
+
+structure MyIntDict :> MY_INT_DICT =
+  sig
+    datatype 'a dict =
+      Empty |
+      Node of 'a dict * int * 'a * 'a dict
+    val empty = Empty
+    fun insert (None, k, v) = Node (Empty, k, v, Empty)
+    fun lookup (Empty, _) = NONE
+      | lookup (Node (dl, l, v, dr), k) =
+        if k < l then		(* int comparison *)
+           lookup (dl, k)
+        else if k > l then      (* int comparison *)
+           lookup (dr, k)
+        else
+           v
+  end
+
+signature MY_GEN_DICT =
+  sig
+    type key
+    type 'a dict
+    val empty : 'a dict
+    val insert : 'a dict * key * 'a -> 'a dict
+    val remove : 'a dict * key -> 'a option
+  end
+
+signature MY_STRING_DICT =
+  MY_GEN_DICT where type key = string
+
+signature MY_INT_DICT =
+  MY_GEN_DICT where type key = int
+
+structure MyStringDict :> MY_STRING_DICT =
+  struct
+    type key = string
+    datatype 'a dict =
+      Empty |
+      Node of 'a dict * key * 'a * 'a dict
+    val empty = Empty
+    fun insert (None, k, v) = Node (Empty, k, v, Empty)
+    fun lookup (Empty, _) = NONE
+      | lookup (Node (dl, l, v, dr), k) =
+        if k < l then		(* string comparison *)
+           lookup (dl, k)
+        else if k > l then      (* string comparison *)
+           lookup (dr, k)
+        else
+           v
+  end
+
+structure MyIntDivDict :> MY_INT_DICT =
+  struct
+    type key = int
+    datatype 'a dict =
+      Empty |
+      Node of 'a dict * key * 'a * 'a dict
+    fun divides (k, l) = (l mod k = 0)
+    val empty = Empty
+    fun insert (None, k, v) = Node (Empty, k, v, Empty)
+    fun lookup (Empty, _) = NONE
+      | lookup (Node (dl, l, v, dr), k) =
+        if divides (k, l) then	    (* divisibility test *)
+           lookup (dl, k)
+        else if divides (l, k) then (* divisibility test *)
+           lookup (dr, k)
+        else
+           v
+  end
+
+signature ORDERED =
+  sig
+    type t
+    val eq : t * t -> bool
+    val lt : t * t -> bool
+  end
+
+(* Lexicographically ordered strings. *)
+open String
+
+structure LexString : ORDERED =
+  struct
+    type t = string
+    val eq = (op =)
+    val lt = (op <)
+  end
+
+
+(* Integers ordered conventionally. *)
+structure LessInt : ORDERED =
+  struct
+    type t = int
+    val eq = (op =)
+    val lt = (op <)
+  end
+
+(* Integers ordered by divisibility.*)
+structure DivInt : ORDERED =
+  struct
+    type t = int
+    fun lt (m, n) = (n mod m = 0)
+    fun eq (m, n) = lt (m, n) andalso lt (n, m)
+  end
+
+signature DICT =
+  sig
+    structure Key : ORDERED
+    type 'a dict
+    val empty : 'a dict
+    val insert : 'a dict * Key.t * 'a -> 'a dict
+    val lookup : 'a dict * Key.t -> 'a option
+  end
+
+signature STRING_DICT =
+  DICT where type Key.t=string
+
+signature INT_DICT =
+  DICT where type Key.t=int
+
+structure StringDict :> STRING_DICT =
+  struct
+    structure Key : ORDERED = LexString
+    datatype 'a dict =
+      Empty |
+      Node of 'a dict * Key.t * 'a * 'a dict
+    val empty = Empty
+    fun insert (Empty, k, v) = Node (Empty, k, v, Empty)
+    fun lookup (Empty, _) = NONE
+      | lookup (Node(dl, l, v, dr), k) =
+        if Key.lt(k, l) then
+           lookup (dl, k)
+        else if Key.lt (l, k) then 
+           lookup (dr, k)
+        else
+           v
+  end
+
+structure LessIntDict :> INT_DICT =
+  struct
+    structure Key : ORDERED = LessInt
+    datatype 'a dict =
+      Empty |
+      Node of 'a dict * Key.t * 'a* 'a dict
+    val empty = Empty
+    fun insert (Empty, k, v) = Node (Empty, k, v, Empty)
+    fun lookup (Empty, _) = NONE
+      | lookup (Node (dl, l, v, dr), k) =
+        if Key.lt(k, l) then
+           lookup (dl, k)
+        else if Key.lt (l, k) then 
+           lookup (dr, k)
+        else
+           v
+  end
+
+structure IntDivDict :> INT_DICT =
+  struct
+    structure Key : ORDERED = IntDiv
+    datatype 'a dict =
+      Empty |
+      Node of 'a dict * Key.t * 'a* 'a dict
+    val empty = Empty
+    fun insert (None, k, v) = Node (Empty, k, v, Empty)
+    fun lookup (Empty, _) = NONE
+      | lookup (Node (dl, l, v, dr), k) =
+        if Key.lt(k, l) then
+           lookup (dl, k)
+        else if Key.lt (l, k) then 
+           lookup (dr, k)
+        else
+           v
+  end
+**************
+Chuong 22
+signature VECTOR =
+  sig
+    type vector
+    val zero : vector
+    val scale : real * vector -> vector
+    val add : vector * vector -> vector
+    val dot : vector * vector -> real
+  end
+
+signature POINT =
+  sig
+    structure Vector : VECTOR
+    type point
+    (* move a point along a vector *)
+    val translate : point * Vector.vector -> point
+    (* the vector from a to b *)
+    val ray : point * point -> Vector.vector
+  end    
+
+signature SPHERE =
+  sig
+    structure Vector : VECTOR
+    structure Point : POINT
+    type sphere
+    val sphere : Point.point * Vector.vector -> sphere
+  end
+
+signature GEOMETRY =
+  sig
+    structure Point : POINT
+    structure Sphere : SPHERE
+  end
+
+
+
+signature SPHERE =
+  sig
+    structure Vector : VECTOR
+    structure Point : POINT
+    sharing type Point.Vector.vector = Vector.vector
+    type sphere
+    val sphere : Point.point * Vector.vector -> sphere
+  end
+
+signature GEOMETRY =
+  sig
+    structure Point : POINT
+    structure Sphere : SPHERE
+    sharing type Point.point = Sphere.Point.point
+            and  Point.Vector.vector = Sphere.Vector.vector
+  end
+
+signature SPHERE =
+  sig
+    structure Vector : VECTOR
+    structure Point : POINT
+    sharing Point.Vector = Vector
+    type sphere
+    val sphere : Point.point * Vector.vector -> sphere
+  end
+
+signature GEOMETRY =
+  sig
+    structure Point : POINT
+    structure Sphere : SPHERE
+    sharing Point = Sphere.Point
+        and Point.Vector = Sphere.Vector
+  end
+
+
+signature SPHERE =
+  sig
+    structure Point : POINT
+    type sphere
+    val sphere : Point.point * Point.Vector.vector -> sphere
+  end
+
+signature GEOMETRY =
+  sig
+    structure Point : POINT
+    structure Sphere : SPHERE
+    sharing Point = Sphere.Point
+  end
+
+signature SPHERE =
+  sig
+    type sphere
+    val sphere : Point.point * Point.Vector.vector -> sphere
+  end
+
+signature SEMI_SPACE =
+  sig
+    structure Point : POINT
+    type semispace
+    val side : Point.point * semispace -> bool option
+  end
+
+signature EXTD_GEOMETRY =
+  sig
+    structure Sphere : SPHERE
+    structure SemiSpace : SEMI_SPACE
+    sharing Sphere.Point = SemiSpace.Point
+  end
+***************
+Chuong 23
+signature ORDERED =
+  sig
+    type t
+    val lt : t * t -> bool
+    val eq : t * t -> bool
+  end
+
+signature DICT =
+  sig
+    structure Key : ORDERED
+    type 'a dict
+    val empty : 'a dict
+    val insert : 'a dict * Key.t * 'a -> 'a dict
+    val lookup : 'a dict * Key.t -> 'a option
+  end
+
+functor DictFun (structure K : ORDERED) :> DICT where type Key.t = K.t =
+struct
+  structure Key : ORDERED = K
+  datatype 'a dict =
+    Empty |
+    Node of 'a dict * Key.t * 'a dict
+  val empty = Empty
+  fun insert (None, k, v) =
+    Node (Empty, k, v, Empty)
+  fun lookup (Empty, \_) = NONE
+    | lookup (Node (dl, l, v, dr), k) =
+      if Key.lt(k, l) then
+         lookup (dl, k)
+      else if Key.lt (l, k) then 
+         lookup (dr, k)
+      else
+         v
+end
+
+(* Lexicographically ordered strings. *)
+structure LexString : ORDERED =
+  struct
+    type t = string
+    val eq = (op =)
+    val lt = (op <)
+  end
+
+(* Integers ordered conventionally. *)
+structure LessInt : ORDERED =
+  struct
+    type t = int
+    val eq = (op =)
+    val lt = (op <)
+  end
+
+(* Integers ordered by divisibility.*)
+structure DivInt : ORDERED =
+  struct
+    type t = int
+    fun lt (m, n) = (n mod m = 0)
+    fun eq (m, n) = lt (m, n) andalso lt (n, m)
+  end
+
+structure LtIntDict = DictFun (structure K = LessInt)
+
+structure LexStringDict = DictFun (structure K = LexString)
+
+structure DivIntDict = DictFun (structure K = DivInt)
+*************
+Chuong 24
+
+signature REGEXP = sig
+
+  datatype regexp =
+    Zero | One | Char of char | 
+    Plus of regexp * regexp | Times of regexp * regexp |
+    Star of regexp
+
+  exception SyntaxError of string
+  val parse : string -> regexp
+
+  val format : regexp -> string
+
+end
+  
+signature MATCHER = sig
+
+  structure RegExp : REGEXP
+
+  val match : RegExp.regexp -> string -> bool
+
+end
+
+structure RegExp :> REGEXP = struct
+
+  datatype token =
+    AtSign | Percent | Literal of char | PlusSign | TimesSign |
+    Asterisk | LParen | RParen
+
+  exception LexicalError
+
+  fun tokenize nil = nil
+    | tokenize (#"+" :: cs) = (PlusSign :: tokenize cs)
+    | tokenize (#"." :: cs) = (TimesSign :: tokenize cs)
+    | tokenize (#"*" :: cs) = (Asterisk :: tokenize cs)
+    | tokenize (#"(" :: cs) = (LParen :: tokenize cs)
+    | tokenize (#")" :: cs) = (RParen :: tokenize cs)
+    | tokenize (#"@" :: cs) = (AtSign :: tokenize cs)
+    | tokenize (#"%" :: cs) = (Percent :: tokenize cs)
+    | tokenize (#"\\" :: c :: cs) = Literal c :: tokenize cs
+    | tokenize (#"\\" :: nil) = raise LexicalError
+    | tokenize (#" " :: cs) = tokenize cs
+    | tokenize (c :: cs) = Literal c :: tokenize cs
+
+  datatype regexp =
+    Zero | One | Char of char | 
+    Plus of regexp * regexp | Times of regexp * regexp |
+    Star of regexp
+
+  exception SyntaxError of string
+
+  fun parse_exp ts =
+      let
+          val (r, ts') = parse_term ts
+      in
+          case ts'
+            of (PlusSign::ts'') =>
+               let
+                   val (r', ts''') = parse_exp ts''
+               in
+                   (Plus (r, r'), ts''')
+               end
+             | _ => (r, ts')
+      end
+
+  and parse_term ts =
+      let
+          val (r, ts') = parse_factor ts
+      in
+          case ts'
+            of (TimesSign::ts'') =>
+               let
+                   val (r', ts''') = parse_term ts''
+               in
+                   (Times (r, r'), ts''')
+               end
+             | _ => (r, ts')
+      end
+
+  and parse_factor ts =
+      let
+          val (r, ts') = parse_atom ts
+      in
+          case ts'
+            of (Asterisk :: ts'') => (Star r, ts'')
+             | _ => (r, ts')
+      end
+
+  and parse_atom nil = raise SyntaxError ("Factor expected\n")
+    | parse_atom (AtSign :: ts) = (Zero, ts)
+    | parse_atom (Percent :: ts) = (One, ts)
+    | parse_atom ((Literal c) :: ts) = (Char c, ts)
+    | parse_atom (LParen :: ts) =
+      let
+          val (r, ts') = parse_exp ts
+      in
+          case ts'
+            of nil => raise SyntaxError ("Right-parenthesis expected\n")
+             | (RParen :: ts'') => (r, ts'')
+             | _ => raise SyntaxError ("Right-parenthesis expected\n")
+      end
+      
+  fun parse s =
+      let
+          val (r, ts) = parse_exp (tokenize (String.explode s))
+      in
+          case ts
+            of nil => r
+             | _ => raise SyntaxError "Unexpected input.\n"
+      end
+      handle LexicalError => raise SyntaxError "Illegal input.\n"
+      
+  fun format_exp Zero = [#"@"]
+    | format_exp One = [#"%"]
+    | format_exp (Char c) = [c]
+    | format_exp (Plus (r1, r2)) =
+      let
+          val s1 = format_exp r1
+          val s2 = format_exp r2
+      in
+          [#"("] @ s1 @ [#"+"] @ s2 @ [#")"]
+      end
+    | format_exp (Times (r1, r2)) =
+      let
+          val s1 = format_exp r1
+          val s2 = format_exp r2
+      in
+          s1 @ [#"*"] @ s2
+      end
+    | format_exp (Star r) =
+      let
+          val s = format_exp r
+      in
+          [#"("] @ s @ [#")"] @ [#"*"]
+      end
+
+  fun format r = String.implode (format_exp r)
+
+end
+
+structure Matcher :> MATCHER =
+struct
+
+    structure RegExp = RegExp
+    open RegExp
+
+    fun match' Zero _ k = false
+      | match' One cs k = k cs
+      | match' (Char c) cs k =
+	(case cs of nil => false | c'::cs' => (c=c') andalso (k cs'))
+      | match' (Plus (r1, r2)) cs k =
+        (match' r1 cs k) orelse (match' r2 cs k)
+      | match' (Times (r1, r2)) cs k =
+        match' r1 cs (fn cs' => match' r2 cs' k)
+      | match' (r as Star r1) cs k =
+        (k cs) orelse match' r1 cs (fn cs' => match' r cs' k)
+
+    fun match regexp string =
+        match' regexp (String.explode string) (fn nil => true | _ => false)
+
+end
+
+structure HOMatcher :> MATCHER =
+struct
+
+    structure RegExp = RegExp
+    open RegExp
+
+    fun FAIL cs k = false
+    fun NULL cs k = k cs
+    fun LITERALLY c cs k = case cs of nil => false | c'::cs' => (c=c') andalso (k cs')
+    fun OR (m1, m2) cs k = m1 cs k orelse m2 cs k
+    infix 8 OR
+    fun THEN (m1, m2) cs k = m1 cs (fn cs' => m2 cs' k)
+    infix 9 THEN
+    fun REPEATEDLY m cs k = (NULL OR (m THEN (REPEATEDLY m))) cs k
+
+    fun match' Zero = FAIL
+      | match' One = NULL
+      | match' (Char c) = LITERALLY c
+      | match' (Plus (r1, r2)) = match' r1  OR  match' r2
+      | match' (Times (r1, r2)) = match' r1  THEN  match' r2
+      | match' (Star r) = REPEATEDLY (match' r)
+
+    fun match regexp string =
+        match' regexp (String.explode string) (fn nil => true | _ => false)
+
+end
+**************
+Chuong 25
+fun exp 0 = 1
+  | exp n = 2 * exp (n-1) ;
+
+fun square (n:int) = n*n
+fun double (n:int) = n+n
+
+fun fast_exp 0 = 1
+  | fast_exp n =
+    if n mod 2 = 0 then
+       square (fast_exp (n div 2))
+    else
+       double (fast_exp (n-1)) ;
+
+fun iterative_fast_exp (0, a) = a
+  | iterative_fast_exp (n, a) =
+    if n mod 2 = 0 then
+       iterative_fast_exp (n div 2, iterative_fast_exp (n div 2, a))
+    else
+       iterative_fast_exp (n-1, 2*a) ;
+
+fun generalized_iterative_fast_exp (b, 0, a) = a
+  | generalized_iterative_fast_exp (b, n, a) =
+    if n mod 2 = 0 then
+       generalized_iterative_fast_exp (b*b, n div 2, a)
+    else
+       generalized_iterative_fast_exp (b, n-1, b*a) ;
+
+fun gcd (m:int, 0):int = m
+  | gcd (0, n:int):int = n
+  | gcd (m:int, n:int):int =
+    if m>n then gcd (m mod n, n) else gcd (m, n mod m) ;
+
+fun ggcd (0, n) = (n, 0, 1)
+  | ggcd (m, 0) = (m, 1, 0)
+  | ggcd (m, n) =
+    if m>n then
+       let
+           val (d, a, b) = ggcd (m mod n, n)
+       in
+           (d, a, b - a*(m div n))
+       end
+    else
+       let
+           val (d, a, b) = ggcd (m, n mod m)
+       in
+           (d, a - b*(n div m), b)
+       end
+
+exception GCD_ERROR
+
+fun checked_gcd (m, n) =
+    let
+        val (d, a, b) = ggcd (m, n)
+    in
+        if m mod d = 0 andalso n mod d = 0 andalso d = a*m+b*n then
+           d
+        else
+           raise GCD_ERROR
+    end
+************
+Chuong 26
+(* Natural numbers in unary *)
+
+datatype nat = Zero | Succ of nat
+
+fun add (m, Zero) = m
+  | add (m, Succ n) = Succ (add (m, n))
+
+fun mul (m, Zero) = Zero
+  | mul (m, Succ n) = add (mul (m, n), m)
+
+fun double Zero = Zero
+  | double (Succ m) = Succ (Succ (double m))
+
+fun exp Zero = Succ Zero
+  | exp (Succ m) = double (exp m)
+
+
+(* Lists *)
+
+(* datatype 'a list = nil | :: of 'a * 'a list *)
+
+fun reverse nil = nil
+  | reverse (h::t) = t @ [h]
+
+(* Two-three trees *)
+
+datatype 'a two_three_tree =
+    Empty
+  | Binary of 'a * 'a two_three_tree * 'a two_three_tree
+  | Ternary of 'a * 'a two_three_tree * 'a two_three_tree * 'a two_three_tree
+
+fun size Empty = 0
+  | size (Binary (_, t1, t2)) = 1 + size t1 + size t2
+  | size (Ternary (_, t1, t2, t3)) = 1 + size t1 + size t2 + size t3
+
+(* Recursion patterns *)
+
+fun nat_recursion base step =
+    let
+	fun loop Zero = base
+	  | loop (Succ m) = step (m, loop m)
+    in
+	loop
+    end
+
+val double = nat_recursion (Zero) (fn (_, result) => Succ (Succ result))
+val exp = nat_recursion (Succ Zero) (fn (_, result) => double result)
+
+fun list_recursion base step =
+    let
+	fun loop nil = base
+	  | loop (h::t) = step (h, loop t)
+    in
+	loop
+    end
+
+fun reverse l = list_recursion nil (fn (h, t) => t @ [h]) l
+
+fun two_three_recursion base step2 step3 =
+    let
+	fun loop Empty = base
+	  | loop (Binary (v, t1, t2)) =
+	    step2 (v, loop t1, loop t2)
+	  | loop (Ternary (v, t1, t2, t3)) =
+	    step3 (v, loop t1, loop t2, loop t3)
+    in
+	loop
+    end
+
+fun size t =
+    two_three_recursion
+    0
+    (fn (_, s1, s2) => 1+s1+s2)
+    (fn (_, s1, s2, s3) => 1+s1+s2+s3)
+    t
+**********
+Chuong 27
+signature REGEXP = sig
+
+  datatype regexp =
+    Zero | One | Char of char | 
+    Plus of regexp * regexp | Times of regexp * regexp |
+    Star of regexp
+
+  exception SyntaxError of string
+  val parse : string -> regexp
+
+  val format : regexp -> string
+
+end
+  
+signature MATCHER = sig
+
+  structure RegExp : REGEXP
+
+  val match : RegExp.regexp -> string -> bool
+
+end
+
+structure RegExp :> REGEXP = struct
+
+  datatype token =
+    AtSign | Percent | Literal of char | PlusSign | TimesSign |
+    Asterisk | LParen | RParen
+
+  exception LexicalError
+
+  fun tokenize nil = nil
+    | tokenize (#"+" :: cs) = (PlusSign :: tokenize cs)
+    | tokenize (#"." :: cs) = (TimesSign :: tokenize cs)
+    | tokenize (#"*" :: cs) = (Asterisk :: tokenize cs)
+    | tokenize (#"(" :: cs) = (LParen :: tokenize cs)
+    | tokenize (#")" :: cs) = (RParen :: tokenize cs)
+    | tokenize (#"@" :: cs) = (AtSign :: tokenize cs)
+    | tokenize (#"%" :: cs) = (Percent :: tokenize cs)
+    | tokenize (#"\\" :: c :: cs) = Literal c :: tokenize cs
+    | tokenize (#"\\" :: nil) = raise LexicalError
+    | tokenize (#" " :: cs) = tokenize cs
+    | tokenize (c :: cs) = Literal c :: tokenize cs
+
+  datatype regexp =
+    Zero | One | Char of char | 
+    Plus of regexp * regexp | Times of regexp * regexp |
+    Star of regexp
+
+  exception SyntaxError of string
+
+  fun parse_exp ts =
+      let
+          val (r, ts') = parse_term ts
+      in
+          case ts'
+            of (PlusSign::ts'') =>
+               let
+                   val (r', ts''') = parse_exp ts''
+               in
+                   (Plus (r, r'), ts''')
+               end
+             | _ => (r, ts')
+      end
+
+  and parse_term ts =
+      let
+          val (r, ts') = parse_factor ts
+      in
+          case ts'
+            of (TimesSign::ts'') =>
+               let
+                   val (r', ts''') = parse_term ts''
+               in
+                   (Times (r, r'), ts''')
+               end
+             | _ => (r, ts')
+      end
+
+  and parse_factor ts =
+      let
+          val (r, ts') = parse_atom ts
+      in
+          case ts'
+            of (Asterisk :: ts'') => (Star r, ts'')
+             | _ => (r, ts')
+      end
+
+  and parse_atom nil = raise SyntaxError ("Factor expected\n")
+    | parse_atom (AtSign :: ts) = (Zero, ts)
+    | parse_atom (Percent :: ts) = (One, ts)
+    | parse_atom ((Literal c) :: ts) = (Char c, ts)
+    | parse_atom (LParen :: ts) =
+      let
+          val (r, ts') = parse_exp ts
+      in
+          case ts'
+            of nil => raise SyntaxError ("Right-parenthesis expected\n")
+             | (RParen :: ts'') => (r, ts'')
+             | _ => raise SyntaxError ("Right-parenthesis expected\n")
+      end
+      
+  fun parse s =
+      let
+          val (r, ts) = parse_exp (tokenize (String.explode s))
+      in
+          case ts
+            of nil => r
+             | _ => raise SyntaxError "Unexpected input.\n"
+      end
+      handle LexicalError => raise SyntaxError "Illegal input.\n"
+      
+  fun format_exp Zero = [#"@"]
+    | format_exp One = [#"%"]
+    | format_exp (Char c) = [c]
+    | format_exp (Plus (r1, r2)) =
+      let
+          val s1 = format_exp r1
+          val s2 = format_exp r2
+      in
+          [#"("] @ s1 @ [#"+"] @ s2 @ [#")"]
+      end
+    | format_exp (Times (r1, r2)) =
+      let
+          val s1 = format_exp r1
+          val s2 = format_exp r2
+      in
+          s1 @ [#"*"] @ s2
+      end
+    | format_exp (Star r) =
+      let
+          val s = format_exp r
+      in
+          [#"("] @ s @ [#")"] @ [#"*"]
+      end
+
+  fun format r = String.implode (format_exp r)
+
+end
+
+structure Matcher :> MATCHER =
+struct
+
+    structure RegExp = RegExp
+    open RegExp
+
+    fun match' Zero _ k = false
+      | match' One cs k = k cs
+      | match' (Char c) cs k =
+	(case cs of nil => false | c'::cs' => (c=c') andalso (k cs'))
+      | match' (Plus (r1, r2)) cs k =
+        (match' r1 cs k) orelse (match' r2 cs k)
+      | match' (Times (r1, r2)) cs k =
+        match' r1 cs (fn cs' => match' r2 cs' k)
+      | match' (r as Star r1) cs k =
+        (k cs) orelse match' r1 cs (fn cs' => match' r cs' k)
+
+    fun match regexp string =
+        match' regexp (String.explode string) (fn nil => true | _ => false)
+
+end
+
+structure HOMatcher :> MATCHER =
+struct
+
+    structure RegExp = RegExp
+    open RegExp
+
+    fun FAIL cs k = false
+    fun NULL cs k = k cs
+    fun LITERALLY c cs k = case cs of nil => false | c'::cs' => (c=c') andalso (k cs')
+    fun OR (m1, m2) cs k = m1 cs k orelse m2 cs k
+    infix 8 OR
+    fun THEN (m1, m2) cs k = m1 cs (fn cs' => m2 cs' k)
+    infix 9 THEN
+    fun REPEATEDLY m cs k = (NULL OR (m THEN (REPEATEDLY m))) cs k
+
+    fun match' Zero = FAIL
+      | match' One = NULL
+      | match' (Char c) = LITERALLY c
+      | match' (Plus (r1, r2)) = match' r1  OR  match' r2
+      | match' (Times (r1, r2)) = match' r1  THEN  match' r2
+      | match' (Star r) = REPEATEDLY (match' r)
+
+    fun match regexp string =
+        match' regexp (String.explode string) (fn nil => true | _ => false)
+
+end
+
+************
+val regexp = Matcher.RegExp.parse "(a+b)*"
+
+val matches = Matcher.match regexp
+
+val ex1 = matches "aabba"
+
+val ex2 = matches "aabac"
+
+--------------------
+
+val regexp = Matcher.RegExp.parse "(a+b+c).(a+b+c+1+2+3+_.(a+1))*"
+
+val matches = Matcher.match regexp
+
+val ex1 = matches "abc_a1_1a"
+
+val ex2 = matches "aabac__"
+
+---------------------
+
+
+val regexp = Matcher.RegExp.parse "(0+1+2)*.,.(0+1+2).(0+1+2)*"
+
+val matches = Matcher.match regexp
+
+val ex1 = matches "12,012"
+
+val ex2 = matches ",012"
+
+--------------------
+
+
+
+**************
+Chuong 28
+(* Lists with mutable tails. *)
+
+datatype 'a mutable_list = Nil | Cons of 'a * 'a mutable_list ref
+
+local
+   fun ipr (Nil, a) = a
+     | ipr (this as (Cons (_, r as ref next)), a) =
+       ipr (next, (r := a; this))
+in
+   (* destroys argument, yields its reversal *)
+   fun inplace_reverse l = ipr (l, Nil)
+end
+
+(* Queues *)
+
+(* Signature of queues as an abstract type. *)
+signature QUEUE = sig
+
+  type 'a queue
+
+  exception Empty
+
+  val new : unit -> 'a queue
+
+  val insert : 'a * 'a queue -> 'a queue
+
+  val remove : 'a queue -> 'a * 'a queue
+
+end
+
+(* Inefficient implementation of a persistent queue as a list.  A sequence
+   of n operations takes O(n^2) time in the worst case. *)
+structure NaiveQueue :> QUEUE = struct
+
+    type 'a queue = 'a list
+
+    fun new () = nil
+
+    fun insert (x, q) = x::q
+
+    exception Empty
+
+    fun remove [x] = (x, nil)
+      | remove (x::xs) =
+	let
+	    val (y, q) = remove xs
+	in
+	    (y, x::q)
+	end
+
+end
+
+(* Persistent queues with amortized constant-time behavior for
+   single-threaded executions of queue operations.  Rep invariant:
+   1. front is empty only if the back is empty
+   2. list of elements (in order of departure) of the queue (bs, fs)
+      is fs @ rev bs *)
+structure AmortizedSingleThreadedQueue :> QUEUE = struct
+
+    type 'a queue = 'a list * 'a list
+
+    (* smart constructor to enforce rep inv *)
+    fun make_queue (q as (nil, nil)) = q
+      | make_queue (q as (bs, nil)) = (nil, rev bs)
+      | make_queue q = q
+
+    (* queue operations *)
+    fun new () = make_queue (nil, nil)
+
+    fun insert (b, (bs, fs)) = make_queue (b::bs, fs)
+
+    exception Empty
+
+    fun remove (_, nil) = raise Empty
+      | remove (bs, f::fs) = (f, make_queue (bs, fs))
+
+end;
+
+(* Amortized constant-time single-threaded queues, variant representation
+   in which a queue has the form (bs, sb, fs, sf) satisfying the rep inv:
+   1. sb = length bs, sf = length fs
+   2. sf >= sb
+*)
+structure AmortizedSingleThreadedQueue2 :> QUEUE = struct
+
+    type 'a queue = 'a list * int * 'a list * int
+
+    fun make_queue (q as (bs, sb, fs, sf)) =
+	if sf >= sb then
+	    q
+	else
+	    (nil, 0, fs @ rev bs, sf+sb)
+
+    fun new () = make_queue (nil, 0, nil, 0)
+
+    fun insert (b, (bs, sb, fs, sf)) = make_queue (b::bs, sb+1, fs, sf)
+
+    exception Empty
+
+    fun remove (_, _, _, 0) = raise Empty
+      | remove (bs, sb, f::fs, sf) = (f, make_queue (bs, sb, fs, sf-1))
+
+end
+
+(* Naive attempt to handle the multi-threaded case by memoization.  Fails
+   to achieve an amortized constant-time bound in general. (Consider a
+   sequence of n inserts, followed by an n-way split consisting of one more
+   insert and one remove.  Each remove takes O(n) time, for a total time of
+   O(n^2) for O(n) operations.) *)
+structure NaiveMemoizedQueue :> QUEUE = struct
+
+    type 'a queue = ('a list * 'a list) ref
+
+    fun make_queue (qv as (nil, nil)) = ref qv
+      | make_queue (qv as (bs, nil)) = ref (nil, rev bs)
+      | make_queue qv = ref qv
+
+    fun new () = make_queue (nil, nil)
+
+    fun insert (b, ref (bs, fs)) = make_queue (b::bs, fs)
+
+    exception Empty
+
+    fun remove (ref (_, nil)) = raise Empty
+      | remove (ref (bs, f::fs)) = (f, make_queue (bs, fs))
+
+end ;
+
+(* Amortized constant-time multi-threaded queues.  Combines specialized
+   representation with memoization to achieve amortized constant-time
+   behavior, even in the multi-threaded case. *)
+structure AmortizedMultiThreadedQueue :> QUEUE = struct
+
+   (* Specialized list representations, with memoization. *)
+    datatype 'a special_list_value =
+	Nil
+      | Cons of 'a * 'a special_list
+      | Append of 'a special_list * 'a special_list
+      | Reverse of 'a list
+    withtype 'a special_list = 'a special_list_value ref
+
+    (* Reverse a list, forming a special_list. *)
+    fun revltosl ([], s) = s
+      | revltosl (x::xs, s) = revltosl (xs, Cons (x, ref s))
+
+    (* Force a special_list r into Nil/Cons form. *)
+    fun inspect (r as ref (Append (xs, ys))) =
+	(case inspect xs
+	   of Nil =>
+	       let
+		   val s = inspect ys
+	       in
+		   r := s; s
+	       end
+	    | Cons (x, xs') =>
+	       let
+		   val s = Cons (x, ref (Append (xs', ys)))
+	       in
+		   r := s; s
+	       end)
+      | inspect (r as ref (Reverse xs)) =
+	let
+	    val s = revltosl (xs, Nil)
+	in
+	    r := s; s
+	end
+      | inspect (r as ref (nil_or_cons)) = nil_or_cons
+
+    type 'a queue = 'a list * int * 'a special_list * int
+
+    fun make_queue (q as (bs, sb, fs, sf)) =
+	if sf >= sb then
+	    q
+	else
+	    (nil, 0, ref (Append (fs, ref (Reverse bs))), sf+sb)
+
+    fun new () = make_queue (nil, 0, ref Nil, 0)
+
+    fun insert (b, (bs, sb, fs, sf)) =
+	make_queue (b::bs, sb+1, fs, sf)
+
+    exception Empty
+
+    fun remove (bs, sb, fs, sf) =
+	case inspect fs
+	  of Nil => raise Empty
+	   | Cons (f, fs') =>
+	     (f, make_queue (bs, sb, fs', sf-1))
+
+end;
+*****************
+Chuong 30
+signature SEQUENCE = sig
+
+  type 'a seq = int -> 'a
+
+  val constantly : 'a -> 'a seq               (* constant sequence *)
+  val alternately : 'a * 'a -> 'a seq         (* alternating values *)
+  val insert : 'a * 'a seq -> 'a seq
+
+  val map : ('a -> 'b) -> 'a seq -> 'b seq
+  val filter : ('a -> bool) -> 'a seq -> 'a seq
+
+  val zip : 'a seq * 'b seq -> ('a * 'b) seq
+  val unzip : ('a * 'b) seq -> 'a seq * 'b seq
+  val merge : 'a seq * 'a seq -> 'a seq
+
+  val stretch : int -> 'a seq -> 'a seq
+  val shrink : int -> 'a seq -> 'a seq
+
+  val take : int -> 'a seq -> 'a list
+  val drop : int -> 'a seq -> 'a seq
+  val shift : 'a seq -> 'a seq
+
+  val loopback : ('a seq -> 'a seq) -> 'a seq
+
+end
+
+structure Sequence :> SEQUENCE = struct
+
+    type 'a seq = int -> 'a
+
+    fun constantly c n = c
+    fun alternately (c,d) n = if n mod 2 = 0 then c else d
+    fun insert (x, s) 0 = x
+      | insert (x, s) n = s (n-1)
+
+    fun map f s = f o s
+    fun filter p s n =
+	let
+	    val x = s n
+	in
+	    if p x then x else filter p s (n+1)
+	end
+
+    fun zip (s1, s2) n = (s1 n, s2 n)
+    fun unzip (s : ('a * 'b) seq) = (map #1 s, map #2 s)
+    fun merge (s1, s2) n =
+	(if n mod 2 = 0 then s1 else s2) (n div 2)
+
+    fun stretch k s n = s (n div k)
+    fun shrink k s n = s (n * k)
+
+    fun drop k s n = s (n+k)
+    fun shift s = drop 1 s
+    fun take 0 _ = nil
+      | take n s = s 0 :: take (n-1) (shift s)
+
+    fun loopback loop n = loop (loopback loop) n
+
+end
+
+open Sequence
+
+val evens : int seq = fn n => 2*n
+val odds : int seq = fn n => 2*n+1
+val nats : int seq = merge (evens, odds)
+
+
+fun ghep s = (zip (drop 1 s, s))
+
+fun t_loop s n = map (op +) (ghep s) n
+
+fun t_loop s n = map (op +) (zip (drop 1 s, s)) n 
+
+fun fibs_loop s = insert(1, insert (1, t_loop s));
+
+fun fibs n =
+    (insert (1, insert (1, map (op +) (zip (drop 1 fibs, fibs)))))(n)
+
+fun fibs_loop s = insert (1, insert (1, map (op +) (zip (drop 1 s, s))))
+
+val fibs = loopback fibs_loop
+
+fun bad_loop s n = s n + 1
+val bad = loopback bad_loop
+(* val _ = bad 0 *)
+
+(* wires *)
+
+datatype level = High | Low | Undef
+type wire = level seq
+type pair = (level * level) seq
+
+val Z : wire = constantly Low
+val O : wire = constantly High
+
+(* clock pulse with given duration of each pulse *)
+fun clock (freq:int):wire = stretch freq (alternately (Low, High))
+
+(* combinational logic *)
+
+infixr **
+fun (f ** g) (x, y) = (f x, g y)
+
+fun logical_and (Low, _) = Low
+  | logical_and (_, Low) = Low
+  | logical_and (High, High) = High
+  | logical_and _ = Undef
+
+fun logical_not Undef = Undef
+  | logical_not High = Low
+  | logical_not Low = High
+
+fun logical_nop l = l
+
+val logical_nor = logical_and o (logical_not ** logical_not)
+
+type unary_gate = wire -> wire
+type binary_gate = pair -> wire
+
+fun gate f w 0 = Undef
+  | gate f w i = f (w (i-1))
+
+val delay : unary_gate = gate logical_nop
+val inverter : unary_gate = gate logical_not
+val nor_gate : binary_gate = gate logical_nor
+
+(* Flip-flops *)
+
+fun RS_ff (S : wire, R : wire) =
+    let
+	fun X n = nor_gate (zip (S, Y)) n
+	and Y n = nor_gate (zip (X, R)) n
+    in
+	Y
+    end
+
+fun pulse b 0 w i = w i
+  | pulse b n w 0 = b
+  | pulse b n w i = pulse b (n-1) w (i-1)
+
+val S = pulse Low 2 (pulse High 2 Z)
+val R = pulse Low 6 (pulse High 2 Z)
+val Q = RS_ff (S, R)
+val _ = take 20 Q
+val X = RS_ff (S, S)			(* unstable! *)
+val _ = take 20 X
+
+fun loopback2 (f : wire * wire -> wire * wire) =
+    unzip (loopback (zip o f o unzip))
+
+fun RS_ff' (S : wire, R : wire) =
+    let
+	fun RS_loop (X, Y) =
+	    (nor_gate (zip (S, Y)), nor_gate (zip (X, R)))
+    in
+	loopback2 RS_loop
+    end
+*********************************************
+
+Chuong 32
+(* Signature for dictionaries *)
+(*
+   For simplicity, we assume keys are strings, while stored entries
+   are of arbitrary type.  This is prescribed in the signature.
+
+   Existing entries may be "updated" by inserting a new entry
+   with the same key.
+*)
+
+signature DICT =
+sig
+  type key = string
+  type 'a entry = key * 'a
+
+  type 'a dict
+
+  val empty : 'a dict
+  val lookup : 'a dict -> key -> 'a
+  val insert : 'a dict * 'a entry -> 'a dict
+end
+
+(* Unbalanced binary search tree implementation. *)
+(* Rep invariant: 'a tree is a binary search tree *)
+
+structure BinarySearchTree :> DICT = struct
+  type key = string
+  type 'a entry = key * 'a
+  datatype 'a tree = Empty | Node of 'a tree * 'a entry * 'a tree
+  type 'a dict = 'a tree
+
+  exception Lookup of key
+
+  val empty = Empty
+
+  fun insert (Empty, entry) = Node (Empty, entry, Empty)
+    | insert (n as Node (l, e as (k,_), r), e' as (k',_)) =
+      (case String.compare (k, k')
+         of LESS => Node (insert (l, e'), e, r)
+          | GREATER => Node (l, e, insert (r, e'))
+          | EQUAL => n)
+
+  fun lookup (Empty) k = raise (Lookup k)
+    | lookup (Node (l, (k, v), r)) k' =
+      (case String.compare (k, k')
+         of EQUAL => v
+          | LESS => lookup l k'
+          | GREATER => lookup r k')
+
+end
+
+**************
+open BinarySearchTree;
+val MyDict = insert (empty,("book","sach"));
+lookup MyDict "book"
+val MyDict = insert (MyDict,("car","oto"));
+lookup MyDict "car"
+val MyDict = insert (MyDict,("student","sinh vien"));
+lookup MyDict "student" 
+
+**************
+structure RedBlackTree :> DICT =
+struct
+  type key = string
+  type 'a entry = string * 'a
+
+  (* Representation invariant: binary search tree + red-black conditions *)
+  datatype 'a dict =
+    Empty				(* considered black *)
+  | Red of 'a entry * 'a dict * 'a dict
+  | Black of 'a entry * 'a dict * 'a dict
+
+  val empty = Empty
+
+  exception Lookup of key
+
+  fun lookup dict key =
+    let
+      fun lk (Empty) = raise (Lookup key)
+	| lk (Red tree) = lk' tree
+        | lk (Black tree) = lk' tree
+      and lk' ((key1, datum1), left, right) =
+	    (case String.compare(key,key1)
+	       of EQUAL => datum1
+	        | LESS => lk left
+		| GREATER => lk right)
+      in
+	lk dict
+      end
+
+  fun restoreLeft (Black (z, Red (y, Red (x, d1, d2), d3), d4)) =
+        Red (y, Black (x, d1, d2), Black (z, d3, d4))
+    | restoreLeft (Black (z, Red (x, d1, Red (y, d2, d3)), d4)) =
+        Red (y, Black (x, d1, d2), Black (z, d3, d4))
+    | restoreLeft dict = dict
+
+  fun restoreRight (Black (x, d1, Red (y, d2, Red (z, d3, d4)))) =
+        Red (y, Black (x, d1, d2), Black (z, d3, d4))
+    | restoreRight (Black (x, d1, Red (z, Red (y, d2, d3), d4))) =
+        Red (y, Black (x, d1, d2), Black (z, d3, d4))
+    | restoreRight dict = dict
+
+  fun insert (dict, entry as (key, datum)) =
+    let
+      (* val ins : 'a dict -> 'a dict insert entry *)
+      (* ins (Red _) may violate color invariant at root *)
+      (* ins (Black _) or ins (Empty) will be red/black tree *)
+      (* ins preserves black height *)
+      fun ins (Empty) = Red (entry, Empty, Empty)
+	| ins (Red (entry1 as (key1, datum1), left, right)) =
+	  (case String.compare (key, key1)
+	     of EQUAL => Red (entry, left, right)
+	      | LESS => Red (entry1, ins left, right)
+	      | GREATER => Red (entry1, left, ins right))
+        | ins (Black (entry1 as (key1, datum1), left, right)) =
+	  (case String.compare (key, key1)
+	     of EQUAL => Black (entry, left, right)
+	      | LESS => restoreLeft (Black (entry1, ins left, right))
+	      | GREATER => restoreRight (Black (entry1, left, ins right)))
+    in
+      case ins dict
+	of Red (t as (_, Red _, _)) => Black t (* re-color *)
+	 | Red (t as (_, _, Red _)) => Black t (* re-color *)
+	 | dict => dict
+    end
+end
+
+
+
+***********
+Chuong 33
+
+
+***********
+Bo sung 
+
+
+val x = 4;
+fun f(y) = x*y;
+ fun g(h) = 
+   let val x = 7
+      in h(3) + x
+ end; 
+g(f); 
+
+
+
+
+fun mk_counter(init:int) = 
+   let val count = ref init
+       fun counter(inc:int) =
+           (count := !count + inc; !count)
+   in
+       counter
+   end;   
+
+val c = mk_counter(1);
+
+c(2) + c(2);  
+
+-----------------
+
+datatype 'a tree = LF of 'a | ND of ('a tree)*('a tree);
+
+exception No_Subtree;
+
+fun lsub (LF x) = raise No_Subtree | lsub(ND(x,y)) = x;
+
+val t:int tree = ND(ND(LF 1,LF 2),LF 3); 
+
+lsub(t);
+
+---------
+fun prod(LF x) = x | prod(ND(x,y)) = prod(x)*prod(y);
+
+fun prod(tree) = 
+    let exception Zero
+      fun p(LF x) = if x = 0 then (raise Zero) else x
+           | p(ND(x,y)) = p(x)*p(y)
+    in
+      p(tree) handle Zero => 0
+    end;
+
+val t:int tree = ND(ND(LF 0,LF 2),LF 3); 
+
+------------------------
+
+
+fun map(f,nil) = nil |
+  map(f,x::xs) = f(x)::(map(f,xs));
+
+fun cub(x) = x*x*x;
+
+val l = [1,2,3,4];
+
+map(cub,l);
+ 
+fun not(x) = if x = true then false else true;
+
+val b = [true, true, false];
+
+map(not,b);
+
+----------------------------------
+
+fun swap(x,y) = 
+  let val z = !x in x := !y; y := z end;
+
+val u = ref [1,2,3];
+
+val v = ref [4,5];
+
+swap(u,v);
+
+!u;
+!v;
+
+--------------------------------------
+
+fun insert(less,x,nil) = [x]
+| insert(less,x,y::ys) = if less(x,y) then x::y::ys
+  else y::insert(less,x,ys);
+ 
+fun sort(less,nil) = nil
+  | sort(less,x::xs) = insert(less,x,sort(less,xs));
+ 
+ 
+fun less(x,y) = x < y; 
+
+
+sort(less,[9,5,8,2,7,1]);
+
+fun less(x:string,y) = x < y; 
+
+sort(less,["quan","yen","binh"]);
+
+-------------------
+***qsort
+
+fun partition (pivot, nil) = (nil,nil)
+ | partition (pivot, first :: others) =
+let
+val (smalls, bigs) =
+partition(pivot, others)
+in
+if first < pivot
+then (first::smalls, bigs)
+else (smalls, first::bigs)
+end
+
+fun qsort nil = nil
+ | qsort [singleton] = [singleton]
+ | qsort (first::rest) =
+let
+val (smalls, bigs) =
+partition(first,rest)
+in
+qsort(smalls) @ [first] @ qsort(bigs)
+end
+
+***qsort parametric
+fun partition (pivot, nil) lessThan = (nil,nil)
+ | partition (pivot, first :: others) lessThan =
+let
+val (smalls, bigs) =
+partition(pivot, others) lessThan
+in
+if (lessThan first pivot)
+then (first::smalls, bigs)
+else (smalls, first::bigs)
+end; 
+
+fun qsort nil lessThan = nil
+ | qsort [singleton] lessThan = [singleton]
+ | qsort (first::rest) lessThan =
+let
+val (smalls, bigs) =
+partition(first,rest) lessThan
+in
+qsort smalls lessThan @ [first]
+@ qsort bigs lessThan
+end; 
+
+
+fun lessThan (x:string) y = x < y;
+
+
+---------------
+(* Lists *)
+
+fun length nil = 0
+  | length (_::t) = 1 + length t
+
+fun append (nil, l) = l
+  | append (h::t, l) = h :: append (t, l)
+
+fun rev nil = nil
+  | rev (h::t) = rev t @ [h]
+
+local
+    fun rev_helper (nil, a) = a
+      | rev_helper (h::t, a) = rev_helper (t, h::a)
+in
+    fun rev l = rev_helper (l, nil)
+end
+
+-------------------
+fun map' (f, nil) = nil
+  | map' (f, h::t) = (f h) :: map' (f, t)
+
+val constantly = fn k => (fn a => k)
+fun constantly k a = k
+
+fun map f nil = nil
+  | map f (h::t) = (f h) :: (map f t)
+
+fun curry f x y = f (x, y)
+
+fun map f l = curry map' f l
+
+fun add_up nil = 0
+  | add_up (h::t) = h + add_up t
+
+fun mul_up nil = 1
+  | mul_up (h::t) = h * mul_up t
+
+fun reduce (unit, opn, nil) = unit
+  | reduce (unit, opn, h::t) = opn (h, reduce (unit, opn, t))
+
+fun add_up l = reduce (0, op +, l)
+fun mul_up l = reduce (1, op *, l)
+
+fun mystery l = reduce (nil, op ::, l)
+
+fun better_reduce (unit, opn, l) =
+    let
+        fun red nil = unit
+          | red (h::t) = opn (h, red t)
+    in
+        red l
+    end
+
+fun staged_reduce (unit, opn) =
+    let
+        fun red nil = unit
+          | red (h::t) = opn (h, red t)
+    in
+        red
+    end
+
+fun curried_reduce (unit, opn) nil = unit
+  | curried_reduce (unit, opn) (h::t) = opn (h, curried_reduce (unit, opn) t)
+
+fun append (nil, l) = l
+  | append (h::t, l) = h :: append(t,l)
+
+fun curried_append nil l = l
+  | curried_append (h::t) l = h :: append t l
+
+fun staged_append nil = fn l => l
+  | staged_append (h::t) =
+    let
+        val tail_appender = staged_append t
+    in
+        fn l => h :: tail_appender l
+    end
+
+%%%%%%%%%%
+
+* Exceptions *)
+
+fun hd (h::_) = h
+
+hd nil
+
+exception Factorial
+
+fun checked_factorial n =
+    if n < 0 then
+	raise Factorial
+    else if n=0 then
+	1
+	 else
+	     n * checked_factorial (n-1)
+
+exception Factorial
+
+local
+    fun fact 0 = 1
+      | fact n = n * fact (n-1)
+in
+    fun checked_factorial n =
+	if n >= 0 then
+	    fact n
+	else
+	    raise Factorial
+end 
+
+fun factorial_driver () =
+    let
+        val input = read_integer ()
+        val result = makestring (checked_factorial input)
+    in
+        print result
+    end
+    handle Factorial => print "Out of range.\n"
+
+
+fun factorial_driver () =
+    let
+        val input = read_integer ()
+        val result = makestring (checked_factorial input)
+        val _ = print result
+    in
+        factorial_driver ()
+    end
+    handle EndOfFile => print "Done.\n"
+         | SyntaxError =>
+	   let val _ = print "Syntax error.\n" in factorial_driver () end
+         | Factorial =>
+           let val _ = print "Out of range.\n" in factorial_driver () end
+
+exception Change
+
+fun change _ 0 = nil
+  | change nil _ = raise Change
+  | change (coin::coins) amt =
+    if coin > amt then
+	change coins amt
+    else
+       (coin :: change (coin::coins) (amt-coin))
+       handle Change => change coins amt
+
+-----------------------------------
+
+datatype expr = Numeral of int | Plus of expr * expr | Times of expr * expr
+
+fun eval (Numeral n) = Numeral n
+  | eval (Plus (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1+n2)
+    end
+  | eval (Times (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1*n2)
+    end
+
+datatype expr = 
+    Numeral of int | Plus of expr * expr | Times of expr * expr | Recip of expr
+
+fun eval (Numeral n) = Numeral n
+  | eval (Plus (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1+n2)
+    end
+  | eval (Times (e1, e2)) =
+    let
+	val Numeral n1 = eval e1
+	val Numeral n2 = eval e2
+    in
+	Numeral (n1*n2)
+    end
+  | eval (Recip e) = 
+    let
+	val Numeral n = eval e
+    in
+	Numeral (1 div n)
+    end
+------------------------------------------
+Binary Tree
+
+datatype color = Red | Green | Blue;
+
+datatype ’a tree = Niltree |
+Maketree of ’a * (’a tree) * (’a tree); 
+
+fun insert (new:int) Niltree =
+Maketree(new,Niltree,Niltree)
+ | insert new (Maketree (root,l,r)) =
+if new < root
+then Maketree (root,(insert new l),r)
+else Maketree (root,l,(insert new r))
+
+fun buildtree [] = Niltree
+ | buildtree (fst :: rest) =
+insert fst (buildtree rest)
+
+fun find (elt:int) Niltree = false
+ | find elt (Maketree (root,left,right)) =
+if elt = root
+then true
+else if elt < root
+then find elt left
+else find elt right (* elt > root *)
+
+fun bsearch elt list =
+find elt (buildtree list); 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+fun square (x) = x * x; 
+
+fun mult (a, x) = a * x;
+
+
+fun fast_exp (a, 0) = 1
+  | fast_exp (a, n) =
+    if n mod 2 = 0 then
+       square (fast_exp (a, n div 2))
+    else
+       mult (a, fast_exp (a, n-1)) ;
+
+
+fun iterative_fast_exp (0, a) = a
+  | iterative_fast_exp (n, a) =
+    if n mod 2 = 0 then
+       iterative_fast_exp (n div 2, iterative_fast_exp (n div 2, a))
+    else
+       iterative_fast_exp (n-1, 2*a) ;
+
+
+fun generalized_iterative_fast_exp (b, 0, a) = a
+  | generalized_iterative_fast_exp (b, n, a) =
+    if n mod 2 = 0 then
+       generalized_iterative_fast_exp (b*b, n div 2, a)
+    else
+       generalized_iterative_fast_exp (b, n-1, b*a) ;
+
+fun generalized_iterative_fast_exp_mod (b, 0, a, m) = (a mod m)
+  | generalized_iterative_fast_exp_mod (b, n, a, m) =
+    if n mod 2 = 0 then
+       generalized_iterative_fast_exp_mod (((b*b) mod m), n div 2, a, m)
+    else
+       generalized_iterative_fast_exp_mod (b, n-1, ((b*a) mod m), m) ;
+
+
+
+
+fun gcd (m:int, 0):int = m
+  | gcd (0, n:int):int = n
+  | gcd (m:int, n:int):int =
+    if m>n then gcd (m mod n, n) else gcd (m, n mod m) ;
+
+
+
+fun ggcd (0, n) = (n, 0, 1)
+  | ggcd (m, 0) = (m, 1, 0)
+  | ggcd (m, n) =
+    if m>n then
+       let
+           val (d, a, b) = ggcd (m mod n, n)
+       in
+           (d, a, b - a*(m div n))
+       end
+    else
+       let
+           val (d, a, b) = ggcd (m, n mod m)
+       in
+           (d, a - b*(n div m), b)
+       end
+
+
+
+exception GCD_ERROR
+
+fun checked_gcd (m, n) =
+    let
+        val (d, a, b) = ggcd (m, n)
+    in
+        if m mod d = 0 andalso n mod d = 0 andalso d = a*m+b*n then
+           d
+        else
+           raise GCD_ERROR
+    end
+
+fun rev_gcd (m, n) =
+    let
+        val (d, a, b) = ggcd (m, n)
+    in
+        if d = a*m+b*n then
+           a
+        else
+           raise GCD_ERROR
+    end
+
+
+fun fact_helper (0,r:int) = r
+  | fact_helper (n:int,r:int) = fact_helper (n-1,n*r)
+
+fun factorial n:int = fact_helper (n, 1)
+
+$$$$$$$$$$$$$$$$$$
+
+datatype ’a tree = Niltree |
+Maketree of ’a * (’a tree) * (’a tree); 
+
+fun insert (new:int) Niltree =
+Maketree(new,Niltree,Niltree)
+ | insert new (Maketree (root,l,r)) =
+if new < root
+then Maketree (root,(insert new l),r)
+else Maketree (root,l,(insert new r))
+
+fun buildtree [] = Niltree
+ | buildtree (fst :: rest) =
+insert fst (buildtree rest)
+
+fun find (elt:int) Niltree = false
+ | find elt (Maketree (root,left,right)) =
+if elt = root
+then true
+else if elt < root
+then find elt left
+else find elt right (* elt > root *)
+
+fun bsearch elt list =
+find elt (buildtree list); 
+
+val x = bsearch 7  [9,1,10,3,7,5,4,8];
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+datatype 'a tree = LF of 'a | ND of ('a tree)*('a tree);
+
+exception No_Subtree;
+
+fun lsub (LF x) = raise No_Subtree | lsub(ND(x,y)) = x;
+
+val t:int tree = ND(ND(LF 1,LF 2),LF 3); 
+
+lsub(t);
+
+val t:int tree = LF 3; 
+
+---------
+fun prod(LF x) = x | prod(ND(x,y)) = prod(x)*prod(y);
+
+fun prod(tree) = 
+    let exception Zero
+      fun p(LF x) = if x = 0 then (raise Zero) else x
+           | p(ND(x,y)) = p(x)*p(y)
+    in
+      p(tree) handle Zero => 0
+    end;
+
+val t:int tree = ND(ND(LF 0,LF 2),LF 3); 
+
+------------------------
+
+
+fun map(f,nil) = nil |
+  map(f,x::xs) = f(x)::(map(f,xs));
+
+fun cub(x) = x*x*x;
+
+val l = [1,2,3,4];
+
+map(cub,l);
+ 
+fun not(x) = if x = true then false else true;
+
+val b = [true, true, false];
+
+map(not,b);
+
+
+fun reduce (unit, opn, nil) = unit
+  | reduce (unit, opn, h::t) = opn (h, reduce (unit, opn, t))
+
+fun add_up l = reduce (0, op +, l)
+fun mul_up l = reduce (1, op *, l)
+
+
+----------------------------------
+
+
+(fn f => fn x => f(f(x))) (fn y => y + 1) 3;
+
+
+copy by reference
+
+fun  f (x : int ref) =
+    ( x := !x+1;  !x  );
+val y = ref 0;
+f(y) + !y;
+
+-----
+
+fun f (z : int) =
+    let val x = ref z in 
+        x := !x+1; !x 
+    end;
+val y = ref 0;
+f(!y) + !y;
+
+------------
+
+val x = 1;
+fun g(z) = x+z; 
+fun f(y) = 
+  let  val x = y+1 in 
+    g(y*x)
+  end; 
+
+f(3);
+
+------------
+val x = 4;
+   fun f(y) = x*y;
+      fun g(h) = let
+               val x=7 
+                in 
+                h(3) + x
+      end;    
+   g(f);
+--------
+
+fun fact_helper (0,r:int) = r
+  | fact_helper (n:int,r:int) = fact_helper (n-1,n*r)
+
+fun factorial n:int = fact_helper (n, 1)
+
+-----------
+Suy luan kieu:
+
+fun f(x) = x+2;
+
+fun f(g,h) = g(h(0));
+
+fun apply(f, x) = f(x);
+
+fun sum(x) = x + sum(x-1);
+
+---------
+fun qsort nil = nil
+ | qsort [singleton] = [singleton]
+ | qsort (first::rest) =
+let
+val (smalls, bigs) =
+partition(first,rest)
+in
+append(append(qsort(smalls),[first]),qsort(bigs))
+end
+
+----------------
+
+signature QUEUE =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+signature QUEUE_WITH_EMPTY =
+  sig
+    include QUEUE
+    val is_empty : 'a queue -> bool
+  end
+
+signature QUEUE_AS_LISTS =
+  QUEUE where type 'a queue = 'a list * 'a list
+
+signature QUEUE_AS_LIST = sig
+  type 'a queue = 'a list
+  exception Empty
+  val empty : 'a list
+  val insert : 'a * 'a list -> 'a list
+  val remove : 'a list -> 'a * 'a list
+  val is_empty : 'a list -> bool
+end
+
+signature MERGEABLE_QUEUE =
+  sig
+    include QUEUE
+    val merge : 'a queue * 'a queue -> 'a queue
+  end
+
+signature MERGEABLE_INT_QUEUE =
+  sig
+    include QUEUE
+    val merge : int queue * int queue -> int queue
+  end
+
+signature RBT_DT =
+  sig
+    datatype 'a rbt =
+      Empty |
+      Red of 'a rbt * 'a * 'a rbt |
+      Black of 'a rbt * 'a * 'a rbt
+  end
+
+signature RBT = 
+  sig
+    type 'a rbt
+    val Empty : 'a rbt
+    val Red : 'a rbt * 'a * 'a rbt -> 'a rbt
+  end
+
+*********************
+Chuong 20
+signature QUEUE =
+  sig
+    type 'a queue
+    exception Empty
+    val empty : 'a queue
+    val insert : 'a * 'a queue -> 'a queue
+    val remove : 'a queue -> 'a * 'a queue
+  end
+
+structure Queue :> QUEUE =
+  struct
+    type 'a queue = 'a list * 'a list
+    val empty = (nil, nil)
+    fun insert (x, (bs, fs)) = (x::bs, fs)
+    exception Empty
+    fun remove (nil, nil) = raise Empty
+      | remove (bs, f::fs) = (f, (bs, fs))
+      | remove (bs, nil) = remove (nil, rev bs)
+  end
+
+signature PQ =
+  sig
+    type elt
+    val lt : elt * elt -> bool
+    type queue
+    exception Empty
+    val empty : queue
+    val insert : elt * queue -> queue
+    val remove : queue -> elt * queue
+  end
+
+exception X;
+(let fun f(y) = raise X
+     and g(h) = h(1) 
+                     handle X => 2
+in
+     g(f) handle X => 4
+end) handle X => 6;
+
+val x=6;
+(let fun f(y) = x
+     and g(h) = let val x=2 in
+                      h(1) end
+  in
+     let val x=4 in g(f) end
+end);
+
+
+
+
+
+-----------------
+
+datatype 'a tree = LF of 'a | ND of ('a tree)*('a tree);
+
+exception No_Subtree;
+
+fun lsub (LF x) = raise No_Subtree | lsub(ND(x,y)) = x;
+
+val t:int tree = ND(ND(LF 1,LF 2),LF 3); 
+
+lsub(t);
+
+---------
+fun prod(LF x) = x | prod(ND(x,y)) = prod(x)*prod(y);
+
+datatype 'a tree = LF of 'a | ND of ('a tree)*('a tree);
+
+fun prod(tree) = 
+    let exception Zero
+      fun p(LF x) = if x = 0 then (raise Zero) else x
+           | p(ND(x,y)) = p(x)*p(y)
+    in
+      p(tree) handle Zero => 0
+    end;
+val t:int tree = ND(ND(LF 0,LF 2),LF 3); 
+-------------------------
+Xoa k chu so trong danh sach cac chu so, 
+sao cho so nhan duoc tu cac chu so la lon nhat
+      
+fun lonhon(d,h) = d > h;
+fun xoa(l,0,nil) = l |
+xoa(l,0,h::t) = xoa(h::l,0,t) |
+xoa(nil,k,nil) = nil |
+xoa(nil,k,h::t) = xoa(nil,k-1,t) |
+xoa(d::l,k,nil) = xoa(l,k,[d]) |
+xoa(d::l,k,h::t) = if lonhon(d,h) then xoa(d::l,k-1,t) 
+else xoa(l,k,d::(h::t)); 
+
+------------------------
+- fun g f x = f (f x);
+val g = fn : ('a -> 'a) -> 'a -> 'a
+- fun f x = x + 1;
+val f = fn : int -> int
+- g f 3;
+
+
+-------------------------
+
+
+['D:/Prolog/examples/loves'].
+
+loves(mary,john).
+
+loves(paul,X).
+
+sau moi ket qua nhan ; hoac space
+
+return: khong muon hien thi ket qua tiep
+
+ctrl D: thoat khoi Prolog
