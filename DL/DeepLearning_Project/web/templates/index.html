@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Phân loại Ảnh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Wrapper chính để căn container và logo-section -->
+    <div class="main-section">
+        <!-- Container chứa tiêu đề và các phần tử khác -->
+        <div class="container">
+            <h1 class="text-center mb-4">Phân loại ảnh chó mèo gà lợn</h1>
+            <div class="file-upload-section">
+                <label for="imageUpload" class="custom-file-upload">Chọn ảnh</label>
+                <input type="file" id="imageUpload" accept="image/*">
+                <span id="file-name">Chưa có ảnh nào được chọn</span>
+            </div>
+            <img id="preview-image" src="#" alt="Xem trước ảnh" style="display: none;">
+            <button type="button" class="btn btn-primary" id="predictButton">Phân loại</button>
+            <div id="loading">Đang xử lý...</div>
+            <div id="result-container">
+                <h2>Kết quả</h2>
+                <p id="prediction-text"></p>
+                <p id="confidence-text"></p>
+            </div>
+            <div id="error-message"></div>
+        </div>
+
+        <!-- Logo và thông tin nhóm -->
+        <div class="logo-section">
+            <div class="logo-container">
+                <img src="/static/g.png" alt="Logo" class="logo-image" onerror="this.style.display='none'; document.getElementById('image-error').style.display='block';">
+                <div id="image-error" class="image-error">Không thể tải logo. Vui lòng kiểm tra file static/g.png.</div>
+            </div>
+            <div class="group-info">
+                <h2>Bài tập lớn nhóm 3</h2>
+                <p>Chu Văn Dũng-211210740</p>
+                <p>Dương Xuân Bách-211210614</p>
+                <p>Hồ Anh Minh-211211807</p>
+                <p>Phạm Hải Nhi-211203484</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2c3e50, #34495e, #2c3e50);
+            background-size: 300% 300%;
+            animation: animateBackground 15s ease infinite;
+        }
+
+        @keyframes animateBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Wrapper chính để căn container và logo-section */
+        .main-section {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Container chính */
+        .container {
+            max-width: 750px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 40px; /* Tách xa logo-section 40px */
+        }
+
+        /* Logo và thông tin nhóm */
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Căn logo và group-info sang trái */
+            width: 200px; /* Đủ không gian cho chữ nhóm */
+        }
+
+        .logo-container {
+            margin-bottom: 10px;
+        }
+
+        .logo-image {
+            width: 100px; /* Kích thước logo */
+            height: auto;
+            display: block;
+        }
+
+        .image-error {
+            display: none;
+            color: #c0392b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .group-info {
+            color: #ffffff;
+            text-align: left;
+            width: 150px; /* Chứa chữ nhóm trên một dòng */
+        }
+
+        .group-info h2 {
+            font-size: 1.2rem; /* Nhỏ hơn để trên một dòng */
+            font-weight: 700;
+            margin-bottom: 10px;
+            white-space: nowrap; /* Ngăn xuống dòng */
+        }
+
+        .group-info p {
+            font-size: 1rem;
+            margin: 5px 0;
+            font-weight: 400;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #314755, #26a69a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+
+        .file-upload-section {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background-color: #f8f0fb;
+            padding: 15px;
+            border-radius: 25px;
+            width: 100%;
+        }
+
+        .custom-file-upload {
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: none;
+            font-size: 1rem;
+            background: linear-gradient(to right, #314755, #26a69a);
+            background-size: 200% 200%;
+            animation: animateButtonGradient 2s linear infinite;
+        }
+
+        .custom-file-upload:hover {
+            background: linear-gradient(to right, #425a6e, #2ec4b6);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .custom-file-upload:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #file-name {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            background-color: #ffffff;
+            width: 250px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        #imageUpload {
+            display: none;
+        }
+
+        #preview-image {
+            max-width: 100%;
+            height: auto;
+            margin-top: 25px;
+            border-radius: 10px;
+            border: 3px solid #e0e0e0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            display: none;
+            transition: transform 0.2s ease;
+        }
+
+        #preview-image:hover {
+            transform: scale(1.03);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            margin-top: 25px;
+            color: #fff;
+            border: none;
+            box-shadow: 0 5px 11px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background: linear-gradient(to right, #314755, #26a69a);
+            background-size: 200% 200%;
+            animation: animateButtonGradient 2s linear infinite;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #425a6e, #2ec4b6);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #result-container {
+            margin-top: 35px;
+            text-align: center;
+            border: 2px solid #d4edda;
+            padding: 25px;
+            border-radius: 10px;
+            background-color: #f0fdf4;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            animation: fadeIn 1s ease;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #result-container h2 {
+            color: #155724;
+        }
+
+        #prediction-text {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        #confidence-text {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        #loading {
+            margin-top: 25px;
+            font-style: italic;
+            color: #7f8c8d;
+            display: none;
+            text-align: center;
+            font-size: 1.05rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        #error-message {
+            margin-top: 25px;
+            color: #c0392b;
+            display: none;
+            text-align: center;
+            padding: 15px;
+            background-color: #ffebee;
+            border-radius: 10px;
+            border: 1px solid #e57373;
+            font-size: 1rem;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        @keyframes animateButtonGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            .container {
+                margin-right: 0;
+                width: 100%;
+            }
+            .logo-section {
+                width: 100%;
+                align-items: center;
+                margin-top: 20px;
+            }
+            .group-info {
+                width: 100%;
+                text-align: center;
+            }
+            .file-upload-section {
+                flex-direction: column;
+                gap: 10px;
+            }
+            #file-name {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script>
+        const fileInput = document.getElementById('imageUpload');
+        const fileNameSpan = document.getElementById('file-name');
+        const previewImage = document.getElementById('preview-image');
+        const predictButton = document.getElementById('predictButton');
+        const loadingIndicator = document.getElementById('loading');
+        const resultContainer = document.getElementById('result-container');
+        const predictionText = document.getElementById('prediction-text');
+        const confidenceText = document.getElementById('confidence-text');
+        const errorMessage = document.getElementById('error-message');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                fileNameSpan.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                fileNameSpan.textContent = 'Chưa có ảnh nào được chọn';
+                previewImage.src = '#';
+                previewImage.style.display = 'none';
+            }
+        });
+
+        predictButton.addEventListener('click', function() {
+            const file = fileInput.files[0];
+            if (!file) {
+                errorMessage.textContent = 'Vui lòng chọn một ảnh để phân loại.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            errorMessage.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            resultContainer.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Có lỗi xảy ra khi tải lên ảnh.');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadingIndicator.style.display = 'none';
+                resultContainer.style.display = 'block';
+
+                predictionText.textContent = 'Lớp dự đoán: ' + data["Lớp dự đoán"];
+                confidenceText.textContent = 'Độ chính xác: ' + data["Độ chính xác"] + '%';
+
+                // Hiển thị phần trăm từng lớp mỗi dòng
+                const probs = data["Độ chính xác các lớp"];
+                const probsElement = document.createElement('div');
+                probsElement.style.marginTop = '20px';
+                probsElement.style.fontSize = '1rem';
+                probsElement.style.color = '#2c3e50';
+                probsElement.style.textAlign = 'left';
+                probsElement.style.lineHeight = '1.6';
+
+                probsElement.innerHTML = `
+                    Chó: ${probs["Chó"]}%<br>
+                    Mèo: ${probs["Mèo"]}%<br>
+                    Gà: ${probs["Gà"]}%<br>
+                    Lợn: ${probs["Lợn"]}%<br>
+                `;
+
+                // Xóa nội dung cũ trước khi thêm mới
+                resultContainer.querySelectorAll('div').forEach(div => div.remove());
+                resultContainer.appendChild(probsElement);
+            })
+            .catch(error => {
+                loadingIndicator.style.display = 'none';
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

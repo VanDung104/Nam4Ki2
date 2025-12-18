@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package calculator;
+
+// Định nghĩa Request và Response
+message BinaryRequest {
+    int32 a = 1;
+    int32 b = 2;
+}
+
+message BinaryResponse {
+    int32 result = 1;
+}
+
+// Định nghĩa gRPC Service
+service Calculator {
+    rpc Add(BinaryRequest) returns (BinaryResponse);
+    rpc Subtract(BinaryRequest) returns (BinaryResponse);
+    rpc Multiply(BinaryRequest) returns (BinaryResponse);
+    rpc Divide(BinaryRequest) returns (BinaryResponse);
+}

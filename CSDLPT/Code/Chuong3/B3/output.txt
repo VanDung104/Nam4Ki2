@@ -1,0 +1,20 @@
+Người dùng 1 đang viết vào file.
+Người dùng 1 đã viết xong.
+Người dùng 2 đang viết vào file.
+Người dùng 2 đã viết xong.
+Người dùng 3 đang viết vào file.
+Người dùng 3 đã viết xong.
+Người dùng 4 đang viết vào file.
+Người dùng 4 đã viết xong.
+Người dùng 5 đang viết vào file.
+Người dùng 5 đã viết xong.
+Người dùng 6 đang viết vào file.
+Người dùng 6 đã viết xong.
+Người dùng 7 đang viết vào file.
+Người dùng 7 đã viết xong.
+Người dùng 8 đang viết vào file.
+Người dùng 8 đã viết xong.
+Người dùng 9 đang viết vào file.
+Người dùng 9 đã viết xong.
+Người dùng 10 đang viết vào file.
+Người dùng 10 đã viết xong.

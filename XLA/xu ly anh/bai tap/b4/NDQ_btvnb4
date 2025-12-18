@@ -1,0 +1,117 @@
+import cv2
+import random
+import numpy as np
+from matplotlib import pyplot as plt
+
+img = cv2.imread("D:\\Downloadload\\anh-meo-den-dep-14-05-23-00-01.jpg")
+
+# Chuyển ảnh màu sang ảnh xám
+R, G, B = img[:,:,2], img[:,:,1], img[:,:,0] # Tách kênh ảnh 
+img_gray = 0.2989 * R + 0.5870 * G + 0.1140 * B
+
+plt.subplot(351)
+plt.imshow(img[:,:,::-1]) # Đảo ngược thứ tự lấy theo R G B với step = -1
+plt.title("Đây là ảnh gốc")
+plt.subplot(352)
+plt.imshow(img_gray,cmap = "gray") # Đảo ngược thứ tự lấy theo R G B với step = -1
+plt.title("Đây là ảnh xám")
+# Gauss Noise 
+mean = 0 # gia tri trung binh
+variance = 2000  # Phương sai 
+row, col = img_gray.shape
+sigma = variance**0.5 # độ lệch chuẩn (căn bậc 2 của phương sai)
+gauss = np.random.normal(mean, sigma, (row, col))  
+Ig = img_gray + gauss # Cộng 1 gia tri nhieu ngau nhien vao 
+Ig = np.clip(Ig, 0, 255).astype(np.uint8)
+plt.subplot(353)
+plt.imshow(Ig, cmap='gray')
+plt.title("Nhiễu Gauss")
+
+# Salt & Pepper Noise
+def sp_noise(image, prob): #xác suất nhiễu màu đen 
+    output = np.zeros(img_gray.shape, np.uint8)
+    thres = 1 - prob # xác suất nhiễu màu trắng 
+    for i in range(img_gray.shape[0]): #hàng
+        for j in range(img_gray.shape[1]): #cột
+            rdn = random.random()
+            if rdn < prob:
+                output[i][j] = 0
+            elif rdn > thres:
+                output[i][j] = 255
+            else:
+                output[i][j] = image[i][j]
+    return output
+
+sp_img = sp_noise(img_gray,0.05)
+plt.subplot(354)
+plt.imshow(sp_img, cmap='gray') 
+plt.title("Salt & pepper noise")
+
+# Poisson Noise
+def poisson_noise(image):
+    noisy_img = np.zeros_like(image)
+    for i in range(image.shape[0]): #hàng
+        for j in range(image.shape[1]): #cột
+            value = image[i][j]
+            noisy_value = np.random.poisson(value)
+            noisy_img[i][j] = np.clip(noisy_value, 0, 255).astype(np.uint8)
+    return noisy_img
+
+poisson_img = poisson_noise(img_gray)
+plt.subplot(355)
+plt.imshow(poisson_img, cmap='gray')
+plt.title("Nhiễu Poisson")
+
+def Tich_chap(img, mask):
+    h, w = img_gray.shape
+    img_new = np.zeros((h-2, w-2))  # Ảnh mới sẽ nhỏ hơn ảnh gốc
+    for i in range(1, h-1):
+        for j in range(1, w-1):
+            img_new[i-1, j-1] = np.sum(img_gray[i-1:i+2, j-1:j+2] * mask)
+    img_new = np.clip(img_new, 0, 255).astype(np.uint8)
+    return img_new
+
+
+#Lọc sắc nét,highboost
+loc_sac_net = np.array([[0,1,0],[-1,5,-1],[0,-1,0]]) 
+loc_highboost = np.array([[-1,-1,-1],[-1,9,-1],[-1,-1,-1]])
+# Lọc sắc nét ảnh, highboost nhiễu Gauss
+#Ig_gray = cv2.cvtColor(Ig, cv2.COLOR_BGR2GRAY)
+Ig_sacnet = Tich_chap(Ig, loc_sac_net)
+Ig_highboost = Tich_chap(Ig, loc_highboost)
+
+plt.subplot(356)
+plt.imshow(Ig_sacnet, cmap='gray')
+plt.title("Lọc sắc nét Gauss ")
+
+plt.subplot(357)
+plt.imshow(Ig_highboost, cmap='gray')
+plt.title("Lọc highboost Gauss ")
+
+# Lọc sắc nét ảnh, highboost nhiễu Salt & Pepper
+#sp_img_gray = cv2.cvtColor(sp_img, cv2.COLOR_BGR2GRAY)
+sp_img_sacnet = Tich_chap(sp_img, loc_sac_net)
+sp_img_highboost = Tich_chap(sp_img, loc_highboost)
+
+plt.subplot(358)
+plt.imshow(sp_img_sacnet, cmap='gray')
+plt.title("Lọc sắc nét  Salt & Pepper")
+
+plt.subplot(359)
+plt.imshow(sp_img_highboost, cmap='gray')
+plt.title("Lọc highboost Salt & Pepper ")
+
+# Lọc sắc nét ảnh, highboost nhiễu Poisson
+#poisson_img_gray = cv2.cvtColor(poisson_img, cv2.COLOR_BGR2GRAY)
+poisson_img_sacnet = Tich_chap(poisson_img, loc_sac_net)
+poisson_img_highboost = Tich_chap(poisson_img, loc_highboost)
+
+plt.subplot(3,5,10)
+plt.imshow(poisson_img_sacnet, cmap='gray')
+plt.title("Lọc sắc nét Poisson ")
+
+plt.subplot(3,5,11)
+plt.imshow(poisson_img_highboost, cmap='gray')
+plt.title("Lọc highboost Poisson ")
+
+plt.show()

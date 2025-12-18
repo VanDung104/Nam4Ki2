@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detector</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display:swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('../d.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 750px;
+            margin: 140px auto;
+            padding: 30px;
+            background-color: #afb2e2;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06), 0 0 10px rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .file-upload-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .custom-file-upload, .btn-primary {
+            background: linear-gradient(to right, #004d99, #0073b3, #008fcc);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: opacity 0.3s ease-in-out, transform 0.1s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .custom-file-upload:hover, .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .custom-file-upload:active, .btn-primary:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+        }
+        #file-name {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            color: #666;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+        #imageUpload {
+            display: none;
+        }
+        #preview-image {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: none;
+        }
+        .btn-primary {
+            width: 100%;
+            margin-top: 12px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+        }
+        #result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            background-color: #f5f5dc;
+        }
+        #prediction-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        #confidence-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .fake {
+            background-color: #ffe0e0;
+            color: #c82333;
+        }
+        .real {
+            background-color: #e9ecef;
+            color: #28a745;
+        }
+        #loading {
+            margin-top: 20px;
+            font-style: italic;
+            color: #888;
+            display: none;
+            text-align: center;
+        }
+        #error-message {
+            margin-top: 20px;
+            color: #e74c3c;
+            display: none;
+        }
+        .logo-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            text-align: right;
+            z-index: 1000; /* Đảm bảo logo nằm trên cùng */
+        }
+        .logo-container img {
+            max-width: 120px; /* Tăng kích thước logo */
+            height: auto;
+            margin-bottom: 8px;
+        }
+        .logo-container p {
+            font-size: 1rem; /* Tăng kích thước chữ */
+            color: #f8f8f8;
+            margin: 0;
+            font-weight: bold; /* Chữ đậm */
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                max-width: 95%;
+                margin-top: 50px;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+            .file-upload-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .custom-file-upload {
+                margin-right: 0;
+                margin-bottom: 10px;
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+            #file-name {
+                width: 100%;
+            }
+            .btn-primary {
+                padding: 12px 20px;
+                font-size: 1rem;
+                margin-top: 10px;
+            }
+            #preview-image {
+                margin-top: 10px;
+            }
+            #result-container {
+                margin-top: 25px;
+                padding: 15px;
+            }
+            #prediction-text {
+                font-size: 1.1rem;
+            }
+            #confidence-text {
+                font-size: 0.85rem;
+            }
+            #loading, #error-message {
+                margin-top: 15px;
+            }
+            .logo-container {
+                top: 5px;
+                right: 5px;
+            }
+            .logo-container img {
+                max-width: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="g.png" alt="Logo trường">
+        <p>Bài tập lớn nhóm 5</p>
+    </div>
+    <div class="container">
+        <h1>Deepfake Detector</h1>
+        <div class="file-upload-section">
+            <label for="imageUpload" class="custom-file-upload">Chọn tệp</label>
+            <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+            <span id="file-name">Chưa có tệp nào được chọn</span>
+        </div>
+        <img id="preview-image" alt="Ảnh xem trước" style="display: none;">
+        <button type="button" class="btn btn-primary mt-4" onclick="predictImage()" id="predictButton">Kiểm tra</button>
+        <div id="loading" class="text-muted text-center mt-4">Đang kiểm tra...</div>
+        <div id="result-container" class="mt-4" style="display: none;">
+            <p id="prediction-text"></p>
+            <p id="confidence-text"></p>
+        </div>
+        <div id="error-message"></div>
+    </div>
+
+    <script>
+        // ... (phần JavaScript giữ nguyên) ...
+        const fileInput = document.getElementById('imageUpload');
+        const fileNameSpan = document.getElementById('file-name');
+        const previewImage = document.getElementById('preview-image');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                fileNameSpan.textContent = file.name;
+                previewImage.style.display = 'block';
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                fileNameSpan.textContent = 'Chưa có tệp nào được chọn';
+                previewImage.style.display = 'none';
+                previewImage.src = '';
+            }
+        });
+
+        function predictImage() {
+            const file = fileInput.files[0];
+            const resultContainer = document.getElementById('result-container');
+            const predictionText = document.getElementById('prediction-text');
+            const confidenceText = document.getElementById('confidence-text');
+            const errorMessage = document.getElementById('error-message');
+            const predictButton = document.getElementById('predictButton');
+            const loadingIndicator = document.getElementById('loading');
+
+            errorMessage.style.display = 'none';
+            resultContainer.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            predictButton.disabled = true;
+
+            if (!file) {
+                errorMessage.innerText = 'Vui lòng chọn một hình ảnh.';
+                errorMessage.style.display = 'block';
+                loadingIndicator.style.display = 'none';
+                predictButton.disabled = false;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Server Response:', response);
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || `HTTP error! status: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadingIndicator.style.display = 'none';
+                predictButton.disabled = false;
+                errorMessage.style.display = 'none';
+                resultContainer.style.display = 'block';
+                predictionText.innerText = `Kết quả: ${data.class}`;
+                confidenceText.innerText = `Độ thật của ảnh: ${parseFloat(data.confidence).toFixed(4)}`;
+                if (data.class === 'Fake') {
+                    resultContainer.classList.remove('real');
+                    resultContainer.classList.add('fake');
+                } else {
+                    resultContainer.classList.remove('fake');
+                    resultContainer.classList.add('real');
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                loadingIndicator.style.display = 'none';
+                predictButton.disabled = false;
+                errorMessage.innerText = error.message || 'Có lỗi xảy ra trong quá trình dự đoán.';
+                errorMessage.style.display = 'block';
+                resultContainer.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package calculator;
+
+// Định nghĩa service Calculator với phương thức Add
+service Calculator {
+  rpc Add (SumRequest) returns (SumResponse);
+}
+
+// Định nghĩa message cho request
+message SumRequest {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+// Định nghĩa message cho response
+message SumResponse {
+  int32 result = 1;
+}

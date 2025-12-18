@@ -1,0 +1,36 @@
+Server listening on 0.0.0.0:5001...
+Connected by ('127.0.0.1', 56237)
+Server listening on 0.0.0.0:5001...
+Connected by ('127.0.0.1', 56254)
+Server listening on 0.0.0.0:5001...
+Connected by ('127.0.0.1', 56262)
+Receiving file: client.pyimport grpc
+import currency_converter_pb2
+import currency_converter_pb2_grpc
+
+def run():
+    channel = grpc.insecure_channel('localhost:50051')
+    stub = currency_converter_pb2_grpc.CurrencyConverterStub(channel)
+    
+    print("Chương trình chuyển đổi tiền tệ")
+    print("Các loại tiền hỗ trợ: USD, VND, EUR, JPY")
+    
+    while True:
+        try:
+            amount = float(input("Nhập số tiền cần chuyển đổi: "))
+            from_curr = input("Nhập loại tiền ban đầu (VD: USD): ").upper()
+            to_curr = input("Nhập loại tiền muốn chuyển đổi (VD: VND): ").upper()
+            
+            if from_curr == to_curr:
+                print("Không thể chuyển đổi cùng loại tiền tệ!")
+                continue
+                
+            request = currency_converter_pb2.ConversionRequest(
+                amount=amount,
+                from_currency=from_curr,
+                to_currency=to_curr
+            )
+Server listening on 0.0.0.0:5001...
+Connected by ('127.0.0.1', 56280)
+Receiving file: client.py
+File received and saved to D://Nam4Ki2//CSDLPT//Code//Ôn Tập//De3//tcp//receive\client.py
